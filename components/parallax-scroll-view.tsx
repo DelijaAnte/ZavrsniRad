@@ -6,12 +6,14 @@ import Animated, {
   useAnimatedStyle,
   useScrollOffset,
 } from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ThemedView } from "@/components/themed-view";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useThemeColor } from "@/hooks/use-theme-color";
 
 const HEADER_HEIGHT = 250;
+const CONTENT_PADDING = 32;
 
 type Props = PropsWithChildren<{
   headerImage?: ReactElement | null;
@@ -25,6 +27,7 @@ export default function ParallaxScrollView({
 }: Props) {
   const backgroundColor = useThemeColor({}, "background");
   const colorScheme = useColorScheme() ?? "light";
+  const insets = useSafeAreaInsets();
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollOffset = useScrollOffset(scrollRef);
   const headerAnimatedStyle = useAnimatedStyle(() => {
@@ -65,7 +68,17 @@ export default function ParallaxScrollView({
           {headerImage}
         </Animated.View>
       ) : null}
-      <ThemedView style={styles.content}>{children}</ThemedView>
+      <ThemedView
+        style={[
+          styles.content,
+          {
+            paddingTop: CONTENT_PADDING + insets.top,
+            paddingBottom: CONTENT_PADDING + insets.bottom,
+          },
+        ]}
+      >
+        {children}
+      </ThemedView>
     </Animated.ScrollView>
   );
 }
@@ -80,7 +93,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: 32,
+    paddingHorizontal: CONTENT_PADDING,
     gap: 16,
     overflow: "hidden",
   },
