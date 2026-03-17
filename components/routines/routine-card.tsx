@@ -28,7 +28,7 @@ export function RoutineCard({
     >
       <View style={styles.routineHeader}>
         <ThemedText type="subtitle">{routine.name}</ThemedText>
-        <ThemedText>{`${routine.days.length} days • ${totalExercises} exercises`}</ThemedText>
+        <ThemedText>{`${routine.days.length} ${routine.days.length === 1 ? "day" : "days"} • ${totalExercises} exercises`}</ThemedText>
       </View>
 
       {expanded ? (
@@ -84,4 +84,3 @@ const styles = StyleSheet.create({
     color: "#0c2f35",
   },
 });
-

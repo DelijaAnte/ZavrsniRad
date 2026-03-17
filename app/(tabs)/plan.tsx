@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import { FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 import ParallaxScrollView from "@/components/parallax-scroll-view";
 import { RoutineCard } from "@/components/routines/routine-card";
@@ -7,7 +13,6 @@ import { RoutineModal } from "@/components/routines/routine-modal";
 import type { Routine } from "@/components/routines/types";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
- 
 
 export default function PlanScreen() {
   const [modalVisible, setModalVisible] = useState(false);
@@ -25,7 +30,7 @@ export default function PlanScreen() {
       <ThemedView style={styles.headerRow}>
         <View style={styles.headerTitles}>
           <ThemedText type="title">Routines</ThemedText>
-          <ThemedText>Build and review your weekly plan.</ThemedText>
+          <ThemedText>Create or update your weekly plan.</ThemedText>
         </View>
         <TouchableOpacity
           accessibilityRole="button"
@@ -39,7 +44,6 @@ export default function PlanScreen() {
       </ThemedView>
 
       <ThemedView style={styles.section}>
-        <ThemedText type="subtitle">All routines</ThemedText>
         {routines.length ? (
           <FlatList
             data={routines}
@@ -110,4 +114,3 @@ const styles = StyleSheet.create({
     gap: 6,
   },
 });
-

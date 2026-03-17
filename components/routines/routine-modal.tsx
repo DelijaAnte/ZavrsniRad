@@ -94,7 +94,8 @@ export function RoutineModal({
     if (!trimmed || selectedDays.length === 0) return;
 
     const normalized = {} as Record<Day, string[]>;
-    for (const d of selectedDays) normalized[d] = (exercisesByDay[d] ?? []).slice();
+    for (const d of selectedDays)
+      normalized[d] = (exercisesByDay[d] ?? []).slice();
 
     onCreate({
       id: Date.now().toString(),
@@ -118,11 +119,16 @@ export function RoutineModal({
       <Pressable style={styles.modalOverlay} onPress={close}>
         <Pressable style={styles.modalCard} onPress={() => {}}>
           <ScrollView keyboardShouldPersistTaps="handled">
-            <View style={styles.modalHeader}>
-              <View style={{ flex: 1 }}>
-                <ThemedText type="title">New routine</ThemedText>
-                <ThemedText>Choose days and add exercises.</ThemedText>
-              </View>
+            {/* Row sa Name labelom i gumbom × */}
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: 4,
+              }}
+            >
+              <ThemedText type="defaultSemiBold">Name</ThemedText>
               <TouchableOpacity
                 accessibilityRole="button"
                 accessibilityLabel="Close"
@@ -133,7 +139,7 @@ export function RoutineModal({
               </TouchableOpacity>
             </View>
 
-            <ThemedText type="defaultSemiBold">Name</ThemedText>
+            {/* TextInput ispod */}
             <TextInput
               placeholder="e.g. Upper body split"
               value={name}
@@ -155,10 +161,7 @@ export function RoutineModal({
                     activeOpacity={0.85}
                   >
                     <Text
-                      style={[
-                        styles.chipText,
-                        active && styles.chipTextActive,
-                      ]}
+                      style={[styles.chipText, active && styles.chipTextActive]}
                     >
                       {d}
                     </Text>
@@ -216,7 +219,9 @@ export function RoutineModal({
                               style={styles.removeButton}
                               activeOpacity={0.85}
                             >
-                              <Text style={styles.removeButtonText}>Remove</Text>
+                              <Text style={styles.removeButtonText}>
+                                Remove
+                              </Text>
                             </TouchableOpacity>
                           </View>
                         ))}
@@ -303,13 +308,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     backgroundColor: "white",
-  },
-  modalHeader: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    gap: 12,
-    marginBottom: 12,
   },
   iconButton: {
     width: 36,
@@ -442,4 +440,3 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
 });
-
