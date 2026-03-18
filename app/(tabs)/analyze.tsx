@@ -1,75 +1,94 @@
-import { Image } from "expo-image";
-import { Platform, StyleSheet } from "react-native";
-
-import { Collapsible } from "@/components/ui/collapsible";
-import { ExternalLink } from "@/components/external-link";
 import ParallaxScrollView from "@/components/parallax-scroll-view";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
-import { Fonts } from "@/constants/theme";
+import React, { useMemo, useState } from "react";
+import { StyleSheet, View } from "react-native";
+
+import { useRoutines } from "@/components/routines/routines-store";
+import type { Day, Routine } from "@/components/routines/types";
+import { RoutineDayPicker } from "@/components/train/routine-day-picker";
+import { ExerciseProgressCard } from "@/components/analyze";
 
 export default function AnalyzeScreen() {
+  const { routines } = useRoutines();
+  const [routineId, setRoutineId] = useState<string | null>(null);
+  const [day, setDay] = useState<Day | null>(null);
+
+  const selectedRoutine = useMemo<Routine | null>(() => {
+    if (!routineId) return null;
+    return routines.find((r) => r.id === routineId) ?? null;
+  }, [routineId, routines]);
+
+  const exercisesForDay = (day && selectedRoutine?.exercisesByDay[day]) || [];
+
+  function selectRoutine(nextId: string) {
+    setRoutineId(nextId);
+    setDay(null);
+  }
+
+  function selectDay(nextDay: Day) {
+    setDay(nextDay);
+  }
+
   return (
     <ParallaxScrollView
-      headerBackgroundColor={{ light: "#D0D0D0", dark: "#353636" }}
+      headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
     >
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText
-          type="title"
-          style={{
-            fontFamily: Fonts.rounded,
-          }}
-        >
-          Analyze
-        </ThemedText>
+      <ThemedView style={styles.headerRow}>
+        <View style={styles.headerTitles}>
+          <ThemedText type="title">Analyze</ThemedText>
+          <ThemedText>See progression per exercise (demo for now).</ThemedText>
+        </View>
       </ThemedView>
 
-      <ThemedText>
-        This is the Analyze tab. Replace this template content with stats,
-        graphs, and progress.
-      </ThemedText>
+      <RoutineDayPicker
+        routines={routines}
+        selectedRoutineId={routineId}
+        selectedDay={day}
+        onSelectRoutine={selectRoutine}
+        onSelectDay={selectDay}
+      />
 
-      <Collapsible title="Useful links">
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Expo Router docs</ThemedText>
-        </ExternalLink>
-      </Collapsible>
+      {selectedRoutine && day ? (
+        <ThemedView style={styles.section}>
+          <ThemedText type="subtitle">Progress</ThemedText>
 
-      <Collapsible title="Images">
-        <Image
-          source={require("@/assets/images/react-logo.png")}
-          style={{ width: 100, height: 100, alignSelf: "center" }}
-        />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">React Native Images</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes{" "}
-          <ThemedText type="defaultSemiBold">react-native-reanimated</ThemedText>.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The{" "}
-              <ThemedText type="defaultSemiBold">
-                components/ParallaxScrollView.tsx
-              </ThemedText>{" "}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
+          {exercisesForDay.length ? (
+            <View style={styles.progressList}>
+              {exercisesForDay.map((exercise, idx) => (
+                <ExerciseProgressCard
+                  key={exercise}
+                  exercise={exercise}
+                  progress={idx % 2 === 0 ? 1 : 2}
+                />
+              ))}
+            </View>
+          ) : (
+            <ThemedText>No exercises for {day}.</ThemedText>
+          )}
+        </ThemedView>
+      ) : null}
     </ParallaxScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  headerRow: {
     flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  headerTitles: {
+    flex: 1,
+    gap: 4,
+  },
+  section: {
     gap: 8,
+  },
+  progressList: {
+    gap: 12,
+    marginTop: 8,
   },
 });
 

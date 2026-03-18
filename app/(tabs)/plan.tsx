@@ -10,13 +10,13 @@ import {
 import ParallaxScrollView from "@/components/parallax-scroll-view";
 import { RoutineCard } from "@/components/routines/routine-card";
 import { RoutineModal } from "@/components/routines/routine-modal";
-import type { Routine } from "@/components/routines/types";
+import { useRoutines } from "@/components/routines/routines-store";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 
 export default function PlanScreen() {
   const [modalVisible, setModalVisible] = useState(false);
-  const [routines, setRoutines] = useState<Routine[]>([]);
+  const { routines, addRoutine } = useRoutines();
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   function openCreateModal() {
@@ -73,7 +73,7 @@ export default function PlanScreen() {
       <RoutineModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
-        onCreate={(routine) => setRoutines((prev) => [routine, ...prev])}
+        onCreate={addRoutine}
       />
     </ParallaxScrollView>
   );

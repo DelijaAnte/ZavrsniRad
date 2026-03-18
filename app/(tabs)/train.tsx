@@ -1,76 +1,104 @@
-import { Image } from "expo-image";
-import { Platform, StyleSheet } from "react-native";
+import React, { useMemo, useState } from "react";
+import { StyleSheet, View } from "react-native";
 
-import { Collapsible } from "@/components/ui/collapsible";
-import { ExternalLink } from "@/components/external-link";
 import ParallaxScrollView from "@/components/parallax-scroll-view";
+import { useRoutines } from "@/components/routines/routines-store";
+import type { Day, Routine } from "@/components/routines/types";
+import {
+  ExerciseLogCard,
+  RoutineDayPicker,
+  useTrainLog,
+} from "@/components/train";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
-import { Fonts } from "@/constants/theme";
 
 export default function TrainScreen() {
+  const { routines } = useRoutines();
+  const { log, reset, ensureExercise, addSet, removeSet, updateSet } =
+    useTrainLog();
+
+  const [routineId, setRoutineId] = useState<string | null>(null);
+  const [day, setDay] = useState<Day | null>(null);
+
+  const selectedRoutine = useMemo<Routine | null>(() => {
+    if (!routineId) return null;
+    return routines.find((r) => r.id === routineId) ?? null;
+  }, [routineId, routines]);
+
+  const exercisesForDay =
+    (day && selectedRoutine?.exercisesByDay[day]) || [];
+
+  function selectRoutine(nextId: string) {
+    setRoutineId(nextId);
+    setDay(null);
+    reset();
+  }
+
+  function selectDay(nextDay: Day) {
+    setDay(nextDay);
+    reset();
+  }
+
   return (
     <ParallaxScrollView
-      headerBackgroundColor={{ light: "#D0D0D0", dark: "#353636" }}
+      headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
     >
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText
-          type="title"
-          style={{
-            fontFamily: Fonts.rounded,
-          }}
-        >
-          Train
-        </ThemedText>
+      <ThemedView style={styles.headerRow}>
+        <View style={styles.headerTitles}>
+          <ThemedText type="title">Train</ThemedText>
+          <ThemedText>Pick a routine and log today&apos;s work.</ThemedText>
+        </View>
       </ThemedView>
 
-      <ThemedText>
-        This is the Train tab. Replace this template content with your workout
-        session UI.
-      </ThemedText>
+      <RoutineDayPicker
+        routines={routines}
+        selectedRoutineId={routineId}
+        selectedDay={day}
+        onSelectRoutine={selectRoutine}
+        onSelectDay={selectDay}
+      />
 
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          Tabs are defined in{" "}
-          <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>.
-        </ThemedText>
-      </Collapsible>
-
-      <Collapsible title="Images">
-        <Image
-          source={require("@/assets/images/react-logo.png")}
-          style={{ width: 100, height: 100, alignSelf: "center" }}
-        />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example animated component:{" "}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText>
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The{" "}
-              <ThemedText type="defaultSemiBold">
-                components/ParallaxScrollView.tsx
-              </ThemedText>{" "}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
+      {selectedRoutine && day ? (
+        <ThemedView style={styles.section}>
+          <ThemedText type="subtitle">Exercises</ThemedText>
+          {exercisesForDay.length ? (
+            <View style={styles.exerciseList}>
+              {exercisesForDay.map((exercise) => (
+                <ExerciseLogCard
+                  key={exercise}
+                  exercise={exercise}
+                  sets={log[exercise] ?? []}
+                  onLayout={() => ensureExercise(exercise)}
+                  onAddSet={() => addSet(exercise)}
+                  onRemoveSet={(idx) => removeSet(exercise, idx)}
+                  onUpdateSet={(idx, patch) => updateSet(exercise, idx, patch)}
+                />
+              ))}
+            </View>
+          ) : (
+            <ThemedText>No exercises for {day}.</ThemedText>
+          )}
+        </ThemedView>
+      ) : null}
     </ParallaxScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  headerRow: {
     flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  headerTitles: {
+    flex: 1,
+    gap: 4,
+  },
+  section: {
     gap: 8,
   },
+  exerciseList: {
+    gap: 12,
+  },
 });
-
