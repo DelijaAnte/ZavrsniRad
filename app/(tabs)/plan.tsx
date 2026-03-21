@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import {
+  ActivityIndicator,
   FlatList,
   StyleSheet,
   Text,
@@ -19,13 +20,14 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 
 export default function PlanScreen() {
   const [modalVisible, setModalVisible] = useState(false);
-  const { routines, addRoutine } = useRoutines();
+  const { routines, addRoutine, loading, saving, error } = useRoutines();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const { signOut } = useAuth();
   const colorScheme = useColorScheme() ?? "light";
   const tint = Colors[colorScheme].tint;
 
   function openCreateModal() {
+    if (loading) return;
     setModalVisible(true);
   }
 
@@ -50,13 +52,34 @@ export default function PlanScreen() {
         <TouchableOpacity
           accessibilityRole="button"
           accessibilityLabel="Create routine"
-          style={styles.fabInline}
+          style={[styles.fabInline, loading && styles.fabDisabled]}
           onPress={openCreateModal}
           activeOpacity={0.85}
+          disabled={loading}
         >
           <Text style={styles.fabInlineText}>+</Text>
         </TouchableOpacity>
       </ThemedView>
+
+      {error ? (
+        <ThemedView style={styles.banner}>
+          <ThemedText type="defaultSemiBold">Could not sync data</ThemedText>
+          <ThemedText>{error}</ThemedText>
+        </ThemedView>
+      ) : null}
+
+      {loading ? (
+        <ThemedView style={styles.loadingRow}>
+          <ActivityIndicator />
+          <ThemedText>Loading your program…</ThemedText>
+        </ThemedView>
+      ) : null}
+
+      {saving ? (
+        <ThemedView style={styles.savingRow}>
+          <ThemedText type="defaultSemiBold">Saving…</ThemedText>
+        </ThemedView>
+      ) : null}
 
       <ThemedView style={styles.section}>
         {routines.length ? (
@@ -138,5 +161,26 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#eee",
     gap: 6,
+  },
+  fabDisabled: {
+    opacity: 0.45,
+  },
+  banner: {
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#e8c4c4",
+    backgroundColor: "#fff5f5",
+    gap: 4,
+    marginBottom: 4,
+  },
+  loadingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingVertical: 8,
+  },
+  savingRow: {
+    paddingVertical: 4,
   },
 });

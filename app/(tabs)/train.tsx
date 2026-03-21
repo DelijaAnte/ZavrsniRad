@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 import ParallaxScrollView from "@/components/parallax-scroll-view";
 import { useRoutines } from "@/components/routines/routines-store";
@@ -13,7 +13,7 @@ import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 
 export default function TrainScreen() {
-  const { routines } = useRoutines();
+  const { routines, saveWorkoutSession, loading, saving } = useRoutines();
   const { log, reset, ensureExercise, addSet, removeSet, updateSet } =
     useTrainLog();
 
@@ -36,6 +36,21 @@ export default function TrainScreen() {
 
   function selectDay(nextDay: Day) {
     setDay(nextDay);
+    reset();
+  }
+
+  async function handleSaveSession() {
+    if (!selectedRoutine || !day) return;
+    const { error } = await saveWorkoutSession({
+      routineId: selectedRoutine.id,
+      day,
+      log,
+    });
+    if (error) {
+      Alert.alert("Could not save", error);
+      return;
+    }
+    Alert.alert("Saved", "This session was saved to your account.");
     reset();
   }
 
@@ -78,6 +93,22 @@ export default function TrainScreen() {
           ) : (
             <ThemedText>No exercises for {day}.</ThemedText>
           )}
+
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Save workout session"
+            style={[
+              styles.saveSession,
+              (loading || saving) && styles.saveSessionDisabled,
+            ]}
+            onPress={() => void handleSaveSession()}
+            disabled={loading || saving}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.saveSessionText}>
+              {saving ? "Saving…" : "Save session"}
+            </Text>
+          </TouchableOpacity>
         </ThemedView>
       ) : null}
     </ParallaxScrollView>
@@ -100,5 +131,21 @@ const styles = StyleSheet.create({
   },
   exerciseList: {
     gap: 12,
+  },
+  saveSession: {
+    marginTop: 16,
+    alignSelf: "flex-start",
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+    borderRadius: 12,
+    backgroundColor: "#25707a",
+  },
+  saveSessionDisabled: {
+    opacity: 0.55,
+  },
+  saveSessionText: {
+    color: "#fff",
+    fontWeight: "800",
+    fontSize: 16,
   },
 });
