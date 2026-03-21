@@ -4,8 +4,17 @@ import { ThemedView } from "@/components/themed-view";
 import { AuthContext } from "@/context/auth-context";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import React, { useContext } from "react";
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity } from "react-native";
+import React, { useContext, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Linking,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+} from "react-native";
+
+const GITHUB_REPO_URL = "https://github.com/DelijaAnte/ZavrsniRad";
 
 function displayNameFromUser(user: {
   user_metadata?: Record<string, unknown>;
@@ -24,13 +33,42 @@ export default function ProfileScreen() {
   if (auth == null) {
     throw new Error("Profile must be used within AuthProvider");
   }
-  const { session, initialized, signOut } = auth;
+  const { session, initialized, signOut, deleteAccount } = auth;
   const colorScheme = useColorScheme() ?? "light";
   const tint = Colors[colorScheme].tint;
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   const user = session?.user;
   const email = user?.email ?? null;
   const displayName = user ? displayNameFromUser(user) : null;
+
+  function confirmDeleteAccount() {
+    Alert.alert(
+      "Delete account",
+      "This permanently removes your account and training data. This cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => {
+            void (async () => {
+              setDeletingAccount(true);
+              const { error } = await deleteAccount();
+              setDeletingAccount(false);
+              if (error) {
+                Alert.alert("Could not delete account", error.message);
+              }
+            })();
+          },
+        },
+      ]
+    );
+  }
+
+  function openGitHub() {
+    void Linking.openURL(GITHUB_REPO_URL);
+  }
 
   return (
     <ParallaxScrollView
@@ -63,15 +101,43 @@ export default function ProfileScreen() {
         </ThemedView>
       )}
 
-      <TouchableOpacity
-        accessibilityRole="button"
-        accessibilityLabel="Sign out"
-        style={[styles.signOut, { borderColor: tint }]}
-        onPress={() => void signOut()}
-        activeOpacity={0.85}
-      >
-        <Text style={[styles.signOutText, { color: tint }]}>Sign out</Text>
-      </TouchableOpacity>
+      <ThemedView style={styles.actions}>
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Open project on GitHub"
+          style={[styles.linkButton, { borderColor: tint }]}
+          onPress={openGitHub}
+          activeOpacity={0.85}
+        >
+          <Text style={[styles.linkButtonText, { color: tint }]}>Source on GitHub</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Sign out"
+          style={[styles.signOut, { borderColor: tint }]}
+          onPress={() => void signOut()}
+          activeOpacity={0.85}
+          disabled={deletingAccount}
+        >
+          <Text style={[styles.signOutText, { color: tint }]}>Sign out</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Delete account"
+          style={styles.deleteAccount}
+          onPress={confirmDeleteAccount}
+          activeOpacity={0.85}
+          disabled={deletingAccount || !initialized}
+        >
+          {deletingAccount ? (
+            <ActivityIndicator color="#c0392b" />
+          ) : (
+            <Text style={styles.deleteAccountText}>Delete account</Text>
+          )}
+        </TouchableOpacity>
+      </ThemedView>
     </ParallaxScrollView>
   );
 }
@@ -98,15 +164,39 @@ const styles = StyleSheet.create({
   secondary: {
     opacity: 0.75,
   },
+  actions: {
+    gap: 12,
+    alignItems: "flex-start",
+  },
+  linkButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  linkButtonText: {
+    fontSize: 15,
+    fontWeight: "600",
+  },
   signOut: {
     paddingVertical: 12,
     paddingHorizontal: 14,
     borderRadius: 10,
     borderWidth: 1,
-    alignSelf: "flex-start",
   },
   signOutText: {
     fontSize: 15,
     fontWeight: "600",
+  },
+  deleteAccount: {
+    paddingVertical: 10,
+    paddingHorizontal: 4,
+    minHeight: 44,
+    justifyContent: "center",
+  },
+  deleteAccountText: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#c0392b",
   },
 });

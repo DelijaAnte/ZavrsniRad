@@ -1,0 +1,6 @@
+# Filled by `supabase link`. Deploy functions: `supabase functions deploy delete-account`
+
+# Gateway JWT check often returns 401 "Invalid JWT" for valid user tokens (e.g. after refresh
+# timing). We validate the user inside the function with auth.getUser() instead.
+[functions.delete-account]
+verify_jwt = false
