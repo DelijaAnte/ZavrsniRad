@@ -1,10 +1,10 @@
 import ParallaxScrollView from "@/components/parallax-scroll-view";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
-import { AuthContext } from "@/context/auth-context";
 import { Colors } from "@/constants/theme";
+import { useAuth } from "@/context/auth-context";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -29,11 +29,7 @@ function displayNameFromUser(user: {
 }
 
 export default function ProfileScreen() {
-  const auth = useContext(AuthContext);
-  if (auth == null) {
-    throw new Error("Profile must be used within AuthProvider");
-  }
-  const { session, initialized, signOut, deleteAccount } = auth;
+  const { session, initialized, signOut, deleteAccount } = useAuth();
   const colorScheme = useColorScheme() ?? "light";
   const tint = Colors[colorScheme].tint;
   const [deletingAccount, setDeletingAccount] = useState(false);
@@ -66,8 +62,24 @@ export default function ProfileScreen() {
     );
   }
 
-  function openGitHub() {
-    void Linking.openURL(GITHUB_REPO_URL);
+  async function openGitHub() {
+    try {
+      const supported = await Linking.canOpenURL(GITHUB_REPO_URL);
+      if (!supported) {
+        Alert.alert("Cannot open link", "This device cannot open the project URL.");
+        return;
+      }
+      await Linking.openURL(GITHUB_REPO_URL);
+    } catch {
+      Alert.alert("Cannot open link", "Something went wrong opening the browser.");
+    }
+  }
+
+  async function handleSignOut() {
+    const { error } = await signOut();
+    if (error) {
+      Alert.alert("Could not sign out", error.message);
+    }
   }
 
   return (
@@ -110,7 +122,7 @@ export default function ProfileScreen() {
           accessibilityRole="button"
           accessibilityLabel="Open project on GitHub"
           style={[styles.linkButton, { borderColor: tint }]}
-          onPress={openGitHub}
+          onPress={() => void openGitHub()}
           activeOpacity={0.85}
         >
           <Text style={[styles.linkButtonText, { color: tint }]}>Source on GitHub</Text>
@@ -120,7 +132,7 @@ export default function ProfileScreen() {
           accessibilityRole="button"
           accessibilityLabel="Sign out"
           style={[styles.signOut, { borderColor: tint }]}
-          onPress={() => void signOut()}
+          onPress={() => void handleSignOut()}
           activeOpacity={0.85}
           disabled={deletingAccount}
         >

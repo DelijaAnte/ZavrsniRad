@@ -71,6 +71,21 @@ Deno.serve(async (req) => {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 
+  // Explicit delete so training rows are removed even if FK CASCADE was not applied (older DBs).
+  // Safe when CASCADE exists: row is already gone after deleteUser, or delete is a no-op.
+  const { error: trainingDelErr } = await admin
+    .from("user_training_data")
+    .delete()
+    .eq("user_id", user.id);
+
+  if (trainingDelErr) {
+    console.error("delete-account: user_training_data delete failed", trainingDelErr);
+    return new Response(JSON.stringify({ error: trainingDelErr.message }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   const { error: delErr } = await admin.auth.admin.deleteUser(user.id);
 
   if (delErr) {

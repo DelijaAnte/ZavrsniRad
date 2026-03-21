@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 
-import { supabase } from "@/utils/supabase";
+import { supabase, supabaseAnonKey, supabaseProjectUrl } from "@/utils/supabase";
 
 type DeleteAccountJson = { error?: string; ok?: boolean };
 
@@ -51,7 +51,7 @@ type AuthContextValue = {
     email: string,
     password: string
   ) => Promise<{ error: Error | null; session: Session | null }>;
-  signOut: () => Promise<void>;
+  signOut: () => Promise<{ error: Error | null }>;
   /** Calls Edge Function `delete-account` (service role), then signs out locally. */
   deleteAccount: () => Promise<{ error: Error | null }>;
 };
@@ -63,10 +63,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session: s } }) => {
-      setSession(s);
-      setInitialized(true);
-    });
+    let cancelled = false;
+
+    void supabase.auth
+      .getSession()
+      .then(({ data: { session: s } }) => {
+        if (cancelled) return;
+        setSession(s);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setSession(null);
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setInitialized(true);
+      });
 
     const {
       data: { subscription },
@@ -74,7 +86,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(s);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      cancelled = true;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = useCallback(async (email: string, password: string) => {
@@ -91,7 +106,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
+    try {
+      const { error } = await supabase.auth.signOut();
+      return { error: error ? new Error(error.message) : null };
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Sign out failed";
+      return { error: new Error(message) };
+    }
   }, []);
 
   const deleteAccount = useCallback(async () => {
@@ -105,16 +126,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     const accessToken = sessionData.session.access_token;
-    const baseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!.replace(/\/$/, "");
-    const anonKey = process.env.EXPO_PUBLIC_SUPABASE_KEY!;
 
     try {
-      const res = await fetch(`${baseUrl}/functions/v1/delete-account`, {
+      const res = await fetch(`${supabaseProjectUrl}/functions/v1/delete-account`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
-          apikey: anonKey,
+          apikey: supabaseAnonKey,
         },
         body: "{}",
       });
@@ -126,7 +145,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { error: new Error(parsed.message) };
       }
 
-      await supabase.auth.signOut();
+      const { error: signOutError } = await supabase.auth.signOut();
+      if (signOutError) {
+        return {
+          error: new Error(
+            `Your account was deleted, but clearing this device failed: ${signOutError.message}`
+          ),
+        };
+      }
       return { error: null };
     } catch (e) {
       const message = e instanceof Error ? e.message : "Network error";

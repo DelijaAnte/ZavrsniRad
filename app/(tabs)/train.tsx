@@ -81,9 +81,9 @@ export default function TrainScreen() {
           <ThemedText type="subtitle">Exercises</ThemedText>
           {exercisesForDay.length ? (
             <View style={styles.exerciseList}>
-              {exercisesForDay.map((exercise) => (
+              {exercisesForDay.map((exercise, index) => (
                 <ExerciseLogCard
-                  key={exercise}
+                  key={`${selectedRoutine.id}-${day}-${index}`}
                   exercise={exercise}
                   sets={log[exercise] ?? []}
                   onLayout={() => ensureExercise(exercise)}

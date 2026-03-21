@@ -5,6 +5,7 @@ import LineChart from "react-native-chart-kit/dist/line-chart";
 import type { ExerciseProgression } from "@/components/analyze/progression";
 import { ThemedText } from "@/components/themed-text";
 import { Colors, tintColorLight } from "@/constants/theme";
+import { hexToRgba } from "@/utils/hex-to-rgba";
 
 function formatShortDate(iso: string): string {
   const d = new Date(iso);
@@ -13,21 +14,6 @@ function formatShortDate(iso: string): string {
     month: "short",
     day: "numeric",
   });
-}
-
-function hexToRgba(hex: string, opacity: number): string {
-  let h = hex.replace("#", "");
-  if (h.length === 3) {
-    h = h
-      .split("")
-      .map((c) => c + c)
-      .join("");
-  }
-  const n = Number.parseInt(h, 16);
-  const r = (n >> 16) & 255;
-  const g = (n >> 8) & 255;
-  const b = n & 255;
-  return `rgba(${r},${g},${b},${opacity})`;
 }
 
 /** Charts sit on the white progress card — always use light palette for contrast. */

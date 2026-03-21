@@ -12,6 +12,7 @@ import type { Day, Routine, WorkoutSession } from "@/components/routines/types";
 import type { ExerciseLog } from "@/components/train/types";
 import { useAuth } from "@/context/auth-context";
 import { supabase } from "@/utils/supabase";
+import { sanitizeRoutines, sanitizeWorkoutHistory } from "@/utils/training-data";
 
 type RoutinesContextValue = {
   routines: Routine[];
@@ -32,14 +33,6 @@ type RoutinesContextValue = {
 const RoutinesContext = createContext<RoutinesContextValue | null>(null);
 
 const SAVE_DEBOUNCE_MS = 600;
-
-function isRoutineArray(value: unknown): value is Routine[] {
-  return Array.isArray(value);
-}
-
-function isWorkoutSessionArray(value: unknown): value is WorkoutSession[] {
-  return Array.isArray(value);
-}
 
 function logHasEntries(log: ExerciseLog): boolean {
   for (const sets of Object.values(log)) {
@@ -65,7 +58,12 @@ export function RoutinesProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
 
+  /** Skip the next debounced persist (after remote hydrate or after an explicit save that already persisted). */
   const skipNextPersistRef = useRef(true);
+  const routinesRef = useRef<Routine[]>([]);
+  const workoutHistoryRef = useRef<WorkoutSession[]>([]);
+  routinesRef.current = routines;
+  workoutHistoryRef.current = workoutHistory;
 
   const persist = useCallback(
     async (routinesPayload: Routine[], historyPayload: WorkoutSession[]) => {
@@ -129,11 +127,11 @@ export function RoutinesProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      const nextRoutines = data?.routines;
-      const nextHistory = data?.workout_history;
+      const nextRoutines = sanitizeRoutines(data?.routines);
+      const nextHistory = sanitizeWorkoutHistory(data?.workout_history);
 
-      setRoutines(isRoutineArray(nextRoutines) ? nextRoutines : []);
-      setWorkoutHistory(isWorkoutSessionArray(nextHistory) ? nextHistory : []);
+      setRoutines(nextRoutines);
+      setWorkoutHistory(nextHistory);
       setLoading(false);
       setHydrated(true);
     })();
@@ -194,11 +192,21 @@ export function RoutinesProvider({ children }: { children: React.ReactNode }) {
         log: input.log,
       };
 
-      const nextHistory = [entry, ...workoutHistory];
+      const prevHistory = workoutHistoryRef.current;
+      const nextHistory = [entry, ...prevHistory];
+      skipNextPersistRef.current = true;
       setWorkoutHistory(nextHistory);
-      return persist(routines, nextHistory);
+      workoutHistoryRef.current = nextHistory;
+
+      const result = await persist(routinesRef.current, nextHistory);
+      if (result.error) {
+        workoutHistoryRef.current = prevHistory;
+        setWorkoutHistory(prevHistory);
+        skipNextPersistRef.current = false;
+      }
+      return result;
     },
-    [userId, loading, hydrated, routines, workoutHistory, persist]
+    [userId, loading, hydrated, persist]
   );
 
   const value = useMemo<RoutinesContextValue>(() => {

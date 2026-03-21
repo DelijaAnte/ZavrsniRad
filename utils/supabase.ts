@@ -2,6 +2,22 @@ import "react-native-url-polyfill/auto";
 import { Platform } from "react-native";
 import { createClient } from "@supabase/supabase-js";
 
+const rawUrl = process.env.EXPO_PUBLIC_SUPABASE_URL?.trim();
+const rawKey = process.env.EXPO_PUBLIC_SUPABASE_KEY?.trim();
+
+if (!rawUrl || !rawKey) {
+  throw new Error(
+    "Missing EXPO_PUBLIC_SUPABASE_URL or EXPO_PUBLIC_SUPABASE_KEY. " +
+      "Create a .env / .env.local in the project root (see Expo env docs) and restart the dev server."
+  );
+}
+
+/** Normalized project URL (no trailing slash). Safe after module load. */
+export const supabaseProjectUrl = rawUrl.replace(/\/$/, "");
+
+/** Public anon key. Safe after module load. */
+export const supabaseAnonKey = rawKey;
+
 /**
  * Browser: persist session in localStorage.
  * SSR / Node (Expo Router web server render): no native AsyncStorage and often no localStorage —
@@ -68,17 +84,13 @@ const authStorage = getAuthStorage();
 
 const isNativeApp = Platform.OS === "ios" || Platform.OS === "android";
 
-export const supabase = createClient(
-  process.env.EXPO_PUBLIC_SUPABASE_URL!,
-  process.env.EXPO_PUBLIC_SUPABASE_KEY!,
-  {
-    auth: {
-      storage: authStorage,
-      autoRefreshToken: true,
-      persistSession: true,
-      // Native / browser: parse auth tokens from the URL when present (e.g. magic links).
-      // SSR: leave off (no URL to parse).
-      detectSessionInUrl: isNativeApp || hasBrowserLocalStorage(),
-    },
-  }
-);
+export const supabase = createClient(supabaseProjectUrl, supabaseAnonKey, {
+  auth: {
+    storage: authStorage,
+    autoRefreshToken: true,
+    persistSession: true,
+    // Native / browser: parse auth tokens from the URL when present (e.g. magic links).
+    // SSR: leave off (no URL to parse).
+    detectSessionInUrl: isNativeApp || hasBrowserLocalStorage(),
+  },
+});

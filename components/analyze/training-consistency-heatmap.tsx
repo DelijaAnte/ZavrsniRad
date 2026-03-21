@@ -10,8 +10,9 @@ import {
 import Svg, { G, Rect, Text as SvgText } from "react-native-svg";
 
 import { ThemedText } from "@/components/themed-text";
-import { Colors, tintColorLight } from "@/constants/theme";
 import type { Day, WorkoutSession } from "@/components/routines/types";
+import { Colors, tintColorLight } from "@/constants/theme";
+import { hexToRgba } from "@/utils/hex-to-rgba";
 
 function startOfLocalDay(d: Date): Date {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
@@ -62,21 +63,6 @@ function listMonthsBetween(
     cur.setMonth(m + 1);
   }
   return out;
-}
-
-function hexToRgba(hex: string, opacity: number): string {
-  let h = hex.replace("#", "");
-  if (h.length === 3) {
-    h = h
-      .split("")
-      .map((c) => c + c)
-      .join("");
-  }
-  const n = Number.parseInt(h, 16);
-  const r = (n >> 16) & 255;
-  const g = (n >> 8) & 255;
-  const b = n & 255;
-  return `rgba(${r},${g},${b},${opacity})`;
 }
 
 const chartSurface = Colors.light.background;

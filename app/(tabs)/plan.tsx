@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  FlatList,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -118,25 +117,20 @@ export default function PlanScreen() {
         </ThemedView>
       ) : null}
 
-      <ThemedView style={styles.section}>
+      <ThemedView style={[styles.section, styles.routineList]}>
         {routines.length ? (
-          <FlatList
-            data={routines}
-            keyExtractor={(i) => i.id}
-            renderItem={({ item }) => (
-              <RoutineCard
-                routine={item}
-                expanded={expandedId === item.id}
-                onToggleExpand={() =>
-                  setExpandedId((id) => (id === item.id ? null : item.id))
-                }
-                onEdit={openEditModal}
-                onDelete={confirmDelete}
-              />
-            )}
-            scrollEnabled={false}
-            contentContainerStyle={{ paddingTop: 8 }}
-          />
+          routines.map((item) => (
+            <RoutineCard
+              key={item.id}
+              routine={item}
+              expanded={expandedId === item.id}
+              onToggleExpand={() =>
+                setExpandedId((id) => (id === item.id ? null : item.id))
+              }
+              onEdit={openEditModal}
+              onDelete={confirmDelete}
+            />
+          ))
         ) : (
           <ThemedView style={styles.emptyState}>
             <ThemedText type="defaultSemiBold">No routines yet</ThemedText>
@@ -185,6 +179,9 @@ const styles = StyleSheet.create({
   },
   section: {
     gap: 8,
+  },
+  routineList: {
+    paddingTop: 8,
   },
   emptyState: {
     padding: 16,

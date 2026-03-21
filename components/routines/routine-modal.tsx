@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useReducer, useRef } from "react";
 import {
+  Alert,
   Modal,
   Pressable,
   ScrollView,
@@ -14,6 +15,93 @@ import { ThemedText } from "@/components/themed-text";
 import type { Day, Routine } from "@/components/routines/types";
 import { DAYS } from "@/components/routines/types";
 import { Colors, tintColorLight } from "@/constants/theme";
+
+type RoutineModalDraft = {
+  name: string;
+  selectedDays: Day[];
+  activeDay: Day | null;
+  exerciseText: string;
+  exercisesByDay: Record<Day, string[]>;
+};
+
+function emptyDraft(): RoutineModalDraft {
+  return {
+    name: "",
+    selectedDays: [],
+    activeDay: null,
+    exerciseText: "",
+    exercisesByDay: {} as Record<Day, string[]>,
+  };
+}
+
+type RoutineModalAction =
+  | { type: "replace"; draft: RoutineModalDraft }
+  | { type: "setName"; name: string }
+  | { type: "setExerciseText"; text: string }
+  | { type: "setActiveDay"; day: Day }
+  | { type: "toggleDay"; day: Day }
+  | { type: "addExercise" }
+  | { type: "removeExercise"; day: Day; index: number };
+
+function routineModalReducer(
+  state: RoutineModalDraft,
+  action: RoutineModalAction
+): RoutineModalDraft {
+  switch (action.type) {
+    case "replace":
+      return action.draft;
+    case "setName":
+      return { ...state, name: action.name };
+    case "setExerciseText":
+      return { ...state, exerciseText: action.text };
+    case "setActiveDay":
+      return { ...state, activeDay: action.day };
+    case "toggleDay": {
+      const { day } = action;
+      const existed = state.selectedDays.includes(day);
+      const selectedDays = existed
+        ? state.selectedDays.filter((d) => d !== day)
+        : [...state.selectedDays, day].sort((a, b) => DAYS.indexOf(a) - DAYS.indexOf(b));
+      const exercisesByDay = { ...state.exercisesByDay };
+      if (existed) {
+        delete exercisesByDay[day];
+      } else {
+        exercisesByDay[day] = exercisesByDay[day] ?? [];
+      }
+      let activeDay = state.activeDay;
+      if (!existed) {
+        activeDay = activeDay ?? day;
+      } else if (activeDay === day) {
+        activeDay = selectedDays[0] ?? null;
+      }
+      return { ...state, selectedDays, exercisesByDay, activeDay };
+    }
+    case "addExercise": {
+      const txt = state.exerciseText.trim();
+      if (!txt || !state.activeDay) return state;
+      return {
+        ...state,
+        exerciseText: "",
+        exercisesByDay: {
+          ...state.exercisesByDay,
+          [state.activeDay]: [...(state.exercisesByDay[state.activeDay] ?? []), txt],
+        },
+      };
+    }
+    case "removeExercise":
+      return {
+        ...state,
+        exercisesByDay: {
+          ...state.exercisesByDay,
+          [action.day]: (state.exercisesByDay[action.day] ?? []).filter(
+            (_, i) => i !== action.index
+          ),
+        },
+      };
+    default:
+      return state;
+  }
+}
 
 export function RoutineModal({
   visible,
@@ -32,13 +120,10 @@ export function RoutineModal({
     backgroundColor: Colors.light.tintMuted,
     borderColor: Colors.light.tintBorder,
   };
-  const [name, setName] = useState("");
-  const [selectedDays, setSelectedDays] = useState<Day[]>([]);
-  const [activeDay, setActiveDay] = useState<Day | null>(null);
-  const [exerciseText, setExerciseText] = useState("");
-  const [exercisesByDay, setExercisesByDay] = useState<Record<Day, string[]>>(
-    {} as Record<Day, string[]>,
-  );
+
+  const [draft, dispatch] = useReducer(routineModalReducer, undefined, emptyDraft);
+
+  const { name, selectedDays, activeDay, exerciseText, exercisesByDay } = draft;
 
   const canSubmit = useMemo(() => {
     return name.trim().length > 0 && selectedDays.length > 0;
@@ -56,77 +141,46 @@ export function RoutineModal({
     if (!justOpened) return;
 
     if (mode === "edit" && initialRoutine) {
-      setName(initialRoutine.name);
       const days = initialRoutine.days.slice();
-      setSelectedDays(days);
-      setActiveDay(days[0] ?? null);
-      const next = {} as Record<Day, string[]>;
+      const nextExercises = {} as Record<Day, string[]>;
       for (const d of DAYS) {
-        next[d] = (initialRoutine.exercisesByDay[d] ?? []).slice();
+        nextExercises[d] = (initialRoutine.exercisesByDay[d] ?? []).slice();
       }
-      setExercisesByDay(next);
-      setExerciseText("");
+      dispatch({
+        type: "replace",
+        draft: {
+          name: initialRoutine.name,
+          selectedDays: days,
+          activeDay: days[0] ?? null,
+          exerciseText: "",
+          exercisesByDay: nextExercises,
+        },
+      });
       return;
     }
-    setName("");
-    setSelectedDays([]);
-    setActiveDay(null);
-    setExerciseText("");
-    setExercisesByDay({} as Record<Day, string[]>);
+    dispatch({ type: "replace", draft: emptyDraft() });
   }, [visible, mode, initialRoutine]);
 
   function resetDraft() {
-    setName("");
-    setSelectedDays([]);
-    setActiveDay(null);
-    setExerciseText("");
-    setExercisesByDay({} as Record<Day, string[]>);
+    dispatch({ type: "replace", draft: emptyDraft() });
   }
 
   function close() {
     onClose();
   }
 
-  function toggleDay(day: Day) {
-    setSelectedDays((prev) => {
-      const exists = prev.includes(day);
-      const next = exists ? prev.filter((d) => d !== day) : [...prev, day];
-      next.sort((a, b) => DAYS.indexOf(a) - DAYS.indexOf(b));
-      return next;
-    });
-
-    setExercisesByDay((prev) => {
-      const next = { ...prev };
-      const exists = selectedDays.includes(day);
-      if (exists) delete next[day];
-      else next[day] = next[day] ?? [];
-      return next;
-    });
-
-    setActiveDay((current) => {
-      const removing = selectedDays.includes(day);
-      if (!removing) return current ?? day;
-      if (current !== day) return current;
-      const remaining = selectedDays.filter((d) => d !== day);
-      return remaining[0] ?? null;
-    });
-  }
-
-  function addExercise() {
+  function addExercisePress() {
     const txt = exerciseText.trim();
     if (!txt || !activeDay) return;
-    setExercisesByDay((prev) => ({
-      ...prev,
-      [activeDay]: [...(prev[activeDay] ?? []), txt],
-    }));
-    setExerciseText("");
-  }
-
-  function removeExercise(day: Day, index: number) {
-    setExercisesByDay((prev) => ({
-      ...prev,
-      [day]: (prev[day] ?? []).filter((_, i) => i !== index),
-    }));
+    const list = exercisesByDay[activeDay] ?? [];
+    if (list.some((ex) => ex.trim().toLowerCase() === txt.toLowerCase())) {
+      Alert.alert(
+        "Duplicate exercise",
+        "That exercise is already listed for this day. Use a different name or remove the duplicate first."
+      );
+      return;
+    }
+    dispatch({ type: "addExercise" });
   }
 
   function submitRoutine() {
@@ -134,13 +188,10 @@ export function RoutineModal({
     if (!trimmed || selectedDays.length === 0) return;
 
     const normalized = {} as Record<Day, string[]>;
-    for (const d of selectedDays)
-      normalized[d] = (exercisesByDay[d] ?? []).slice();
+    for (const d of selectedDays) normalized[d] = (exercisesByDay[d] ?? []).slice();
 
     const id =
-      mode === "edit" && initialRoutine
-        ? initialRoutine.id
-        : Date.now().toString();
+      mode === "edit" && initialRoutine ? initialRoutine.id : Date.now().toString();
 
     onSave({
       id,
@@ -185,11 +236,10 @@ export function RoutineModal({
               </TouchableOpacity>
             </View>
 
-            {/* TextInput ispod */}
             <TextInput
               placeholder="e.g. Upper body split"
               value={name}
-              onChangeText={setName}
+              onChangeText={(v) => dispatch({ type: "setName", name: v })}
               style={styles.input}
               accessibilityLabel="Routine name"
               returnKeyType="done"
@@ -202,7 +252,7 @@ export function RoutineModal({
                 return (
                   <TouchableOpacity
                     key={d}
-                    onPress={() => toggleDay(d)}
+                    onPress={() => dispatch({ type: "toggleDay", day: d })}
                     style={[styles.chip, active && selectedChipStyle]}
                     activeOpacity={0.85}
                   >
@@ -231,7 +281,7 @@ export function RoutineModal({
                     return (
                       <TouchableOpacity
                         key={d}
-                        onPress={() => setActiveDay(d)}
+                        onPress={() => dispatch({ type: "setActiveDay", day: d })}
                         style={[styles.chip, isActive && selectedChipStyle]}
                         activeOpacity={0.85}
                       >
@@ -264,7 +314,13 @@ export function RoutineModal({
                             <TouchableOpacity
                               accessibilityRole="button"
                               accessibilityLabel={`Remove ${ex}`}
-                              onPress={() => removeExercise(activeDay, idx)}
+                              onPress={() =>
+                                dispatch({
+                                  type: "removeExercise",
+                                  day: activeDay,
+                                  index: idx,
+                                })
+                              }
                               style={styles.removeButton}
                               activeOpacity={0.85}
                             >
@@ -301,14 +357,14 @@ export function RoutineModal({
                     : "Select a day above"
                 }
                 value={exerciseText}
-                onChangeText={setExerciseText}
+                onChangeText={(v) => dispatch({ type: "setExerciseText", text: v })}
                 style={[styles.input, styles.exerciseInput]}
                 returnKeyType="done"
-                onSubmitEditing={addExercise}
+                onSubmitEditing={addExercisePress}
                 editable={!!activeDay}
               />
               <TouchableOpacity
-                onPress={addExercise}
+                onPress={addExercisePress}
                 style={[
                   styles.addButton,
                   { backgroundColor: tintColorLight },
