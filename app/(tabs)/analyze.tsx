@@ -70,7 +70,8 @@ export default function AnalyzeScreen() {
         <View style={styles.headerTitles}>
           <ThemedText type="title">Analyze</ThemedText>
           <ThemedText>
-            Compare your first and latest log in the period (best set per session).
+            Each saved session on this day lists best kg and best reps; summary is
+            first vs latest in the period.
           </ThemedText>
         </View>
       </ThemedView>

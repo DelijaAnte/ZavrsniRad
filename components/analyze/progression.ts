@@ -3,17 +3,26 @@ import type { ExerciseLog } from "@/components/train/types";
 
 export type AnalyzePeriod = "week" | "month" | "all";
 
-export type ProgressionUnit = "reps" | "kg";
+/** One saved training for this exercise: best load and best reps in that session. */
+export type SessionMetricRow = {
+  at: string;
+  kg: number | null;
+  reps: number | null;
+};
 
 export type ExerciseProgression = {
   exercise: string;
-  unit: ProgressionUnit;
-  firstValue: number;
-  lastValue: number;
-  delta: number;
+  sessionsUsed: number;
+  /** Every matching session in the period, oldest first. */
+  rows: SessionMetricRow[];
+  weightFirst: number | null;
+  weightLast: number | null;
+  weightDelta: number | null;
+  repsFirst: number | null;
+  repsLast: number | null;
+  repsDelta: number | null;
   firstAt: string;
   lastAt: string;
-  sessionsUsed: number;
 };
 
 function parseWeight(raw: string): number {
@@ -28,30 +37,22 @@ function parseReps(raw: string): number {
   return Number.isFinite(n) ? n : 0;
 }
 
-function detectUnit(log: ExerciseLog, exercise: string): ProgressionUnit {
-  const sets = log[exercise];
-  if (!sets?.length) return "reps";
-  for (const s of sets) {
-    if (parseWeight(s.weight) > 0) return "kg";
-  }
-  return "reps";
-}
-
-function sessionValue(
+function bestKgAndRepsForExercise(
   log: ExerciseLog,
-  exercise: string,
-  unit: ProgressionUnit
-): number | null {
+  exercise: string
+): { kg: number | null; reps: number | null } {
   const sets = log[exercise];
-  if (!sets?.length) return null;
-  if (unit === "kg") {
-    let max = 0;
-    for (const s of sets) max = Math.max(max, parseWeight(s.weight));
-    return max > 0 ? max : null;
+  if (!sets?.length) return { kg: null, reps: null };
+  let maxKg = 0;
+  let maxReps = 0;
+  for (const s of sets) {
+    maxKg = Math.max(maxKg, parseWeight(s.weight));
+    maxReps = Math.max(maxReps, parseReps(s.reps));
   }
-  let max = 0;
-  for (const s of sets) max = Math.max(max, parseReps(s.reps));
-  return max > 0 ? max : null;
+  return {
+    kg: maxKg > 0 ? maxKg : null,
+    reps: maxReps > 0 ? maxReps : null,
+  };
 }
 
 export function filterSessionsByPeriod(
@@ -93,39 +94,31 @@ export function progressionForExercise(
   );
   if (!relevant.length) return null;
 
-  const unit = detectUnit(relevant[relevant.length - 1].log, exercise);
+  const rows: SessionMetricRow[] = relevant.map((s) => {
+    const { kg, reps } = bestKgAndRepsForExercise(s.log, exercise);
+    return { at: s.performedAt, kg, reps };
+  });
 
-  const points: { value: number; at: string }[] = [];
-  for (const s of relevant) {
-    const v = sessionValue(s.log, exercise, unit);
-    if (v != null) points.push({ value: v, at: s.performedAt });
-  }
-  if (points.length < 2) {
-    const only = points[0];
-    if (!only) return null;
-    return {
-      exercise,
-      unit,
-      firstValue: only.value,
-      lastValue: only.value,
-      delta: 0,
-      firstAt: only.at,
-      lastAt: only.at,
-      sessionsUsed: 1,
-    };
-  }
+  const first = rows[0];
+  const last = rows[rows.length - 1];
 
-  const first = points[0];
-  const last = points[points.length - 1];
+  const weightDelta =
+    first.kg != null && last.kg != null ? last.kg - first.kg : null;
+  const repsDelta =
+    first.reps != null && last.reps != null ? last.reps - first.reps : null;
+
   return {
     exercise,
-    unit,
-    firstValue: first.value,
-    lastValue: last.value,
-    delta: last.value - first.value,
+    sessionsUsed: rows.length,
+    rows,
+    weightFirst: first.kg,
+    weightLast: last.kg,
+    weightDelta,
+    repsFirst: first.reps,
+    repsLast: last.reps,
+    repsDelta,
     firstAt: first.at,
     lastAt: last.at,
-    sessionsUsed: points.length,
   };
 }
 

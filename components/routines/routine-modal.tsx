@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Modal,
   Pressable,
@@ -17,11 +17,15 @@ import { DAYS } from "@/components/routines/types";
 export function RoutineModal({
   visible,
   onClose,
-  onCreate,
+  mode,
+  initialRoutine,
+  onSave,
 }: {
   visible: boolean;
   onClose: () => void;
-  onCreate: (routine: Routine) => void;
+  mode: "create" | "edit";
+  initialRoutine: Routine | null;
+  onSave: (routine: Routine) => void;
 }) {
   const [name, setName] = useState("");
   const [selectedDays, setSelectedDays] = useState<Day[]>([]);
@@ -31,9 +35,40 @@ export function RoutineModal({
     {} as Record<Day, string[]>,
   );
 
-  const canCreate = useMemo(() => {
+  const canSubmit = useMemo(() => {
     return name.trim().length > 0 && selectedDays.length > 0;
   }, [name, selectedDays.length]);
+
+  const wasVisibleRef = useRef(false);
+
+  useEffect(() => {
+    if (!visible) {
+      wasVisibleRef.current = false;
+      return;
+    }
+    const justOpened = !wasVisibleRef.current;
+    wasVisibleRef.current = true;
+    if (!justOpened) return;
+
+    if (mode === "edit" && initialRoutine) {
+      setName(initialRoutine.name);
+      const days = initialRoutine.days.slice();
+      setSelectedDays(days);
+      setActiveDay(days[0] ?? null);
+      const next = {} as Record<Day, string[]>;
+      for (const d of DAYS) {
+        next[d] = (initialRoutine.exercisesByDay[d] ?? []).slice();
+      }
+      setExercisesByDay(next);
+      setExerciseText("");
+      return;
+    }
+    setName("");
+    setSelectedDays([]);
+    setActiveDay(null);
+    setExerciseText("");
+    setExercisesByDay({} as Record<Day, string[]>);
+  }, [visible, mode, initialRoutine]);
 
   function resetDraft() {
     setName("");
@@ -89,7 +124,7 @@ export function RoutineModal({
     }));
   }
 
-  function createRoutine() {
+  function submitRoutine() {
     const trimmed = name.trim();
     if (!trimmed || selectedDays.length === 0) return;
 
@@ -97,8 +132,13 @@ export function RoutineModal({
     for (const d of selectedDays)
       normalized[d] = (exercisesByDay[d] ?? []).slice();
 
-    onCreate({
-      id: Date.now().toString(),
+    const id =
+      mode === "edit" && initialRoutine
+        ? initialRoutine.id
+        : Date.now().toString();
+
+    onSave({
+      id,
       name: trimmed,
       days: selectedDays.slice(),
       exercisesByDay: normalized,
@@ -114,12 +154,13 @@ export function RoutineModal({
       animationType="slide"
       transparent
       onRequestClose={close}
-      onShow={resetDraft}
     >
       <Pressable style={styles.modalOverlay} onPress={close}>
         <Pressable style={styles.modalCard} onPress={() => {}}>
           <ScrollView keyboardShouldPersistTaps="handled">
-            {/* Row sa Name labelom i gumbom × */}
+            <ThemedText type="subtitle" style={{ marginBottom: 8 }}>
+              {mode === "edit" ? "Edit routine" : "New routine"}
+            </ThemedText>
             <View
               style={{
                 flexDirection: "row",
@@ -280,13 +321,15 @@ export function RoutineModal({
               <TouchableOpacity
                 style={[
                   styles.primaryButton,
-                  !canCreate && styles.primaryButtonDisabled,
+                  !canSubmit && styles.primaryButtonDisabled,
                 ]}
-                onPress={createRoutine}
-                disabled={!canCreate}
+                onPress={submitRoutine}
+                disabled={!canSubmit}
                 activeOpacity={0.85}
               >
-                <Text style={styles.primaryButtonText}>Create</Text>
+                <Text style={styles.primaryButtonText}>
+                  {mode === "edit" ? "Save changes" : "Create"}
+                </Text>
               </TouchableOpacity>
             </View>
           </ScrollView>

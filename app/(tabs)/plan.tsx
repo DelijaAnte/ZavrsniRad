@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   StyleSheet,
   Text,
@@ -11,6 +12,7 @@ import {
 import ParallaxScrollView from "@/components/parallax-scroll-view";
 import { RoutineCard } from "@/components/routines/routine-card";
 import { RoutineModal } from "@/components/routines/routine-modal";
+import type { Routine } from "@/components/routines/types";
 import { useRoutines } from "@/components/routines/routines-store";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
@@ -20,7 +22,10 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 
 export default function PlanScreen() {
   const [modalVisible, setModalVisible] = useState(false);
-  const { routines, addRoutine, loading, saving, error } = useRoutines();
+  const [modalMode, setModalMode] = useState<"create" | "edit">("create");
+  const [routineToEdit, setRoutineToEdit] = useState<Routine | null>(null);
+  const { routines, addRoutine, updateRoutine, deleteRoutine, loading, saving, error } =
+    useRoutines();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const { signOut } = useAuth();
   const colorScheme = useColorScheme() ?? "light";
@@ -28,7 +33,47 @@ export default function PlanScreen() {
 
   function openCreateModal() {
     if (loading) return;
+    setRoutineToEdit(null);
+    setModalMode("create");
     setModalVisible(true);
+  }
+
+  function openEditModal(routine: Routine) {
+    if (loading) return;
+    setRoutineToEdit(routine);
+    setModalMode("edit");
+    setModalVisible(true);
+  }
+
+  function closeModal() {
+    setModalVisible(false);
+    setRoutineToEdit(null);
+  }
+
+  function confirmDelete(routine: Routine) {
+    Alert.alert(
+      "Delete routine",
+      `Remove "${routine.name}"? Workout history for this routine will also be removed.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => {
+            deleteRoutine(routine.id);
+            setExpandedId((id) => (id === routine.id ? null : id));
+          },
+        },
+      ],
+    );
+  }
+
+  function handleSaveRoutine(routine: Routine) {
+    if (modalMode === "edit") {
+      updateRoutine(routine);
+    } else {
+      addRoutine(routine);
+    }
   }
 
   return (
@@ -90,9 +135,11 @@ export default function PlanScreen() {
               <RoutineCard
                 routine={item}
                 expanded={expandedId === item.id}
-                onPress={() =>
+                onToggleExpand={() =>
                   setExpandedId((id) => (id === item.id ? null : item.id))
                 }
+                onEdit={openEditModal}
+                onDelete={confirmDelete}
               />
             )}
             scrollEnabled={false}
@@ -110,8 +157,10 @@ export default function PlanScreen() {
 
       <RoutineModal
         visible={modalVisible}
-        onClose={() => setModalVisible(false)}
-        onCreate={addRoutine}
+        onClose={closeModal}
+        mode={modalMode}
+        initialRoutine={routineToEdit}
+        onSave={handleSaveRoutine}
       />
     </ParallaxScrollView>
   );

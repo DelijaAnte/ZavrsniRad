@@ -16,6 +16,8 @@ import { supabase } from "@/utils/supabase";
 type RoutinesContextValue = {
   routines: Routine[];
   addRoutine: (routine: Routine) => void;
+  updateRoutine: (routine: Routine) => void;
+  deleteRoutine: (routineId: string) => void;
   loading: boolean;
   saving: boolean;
   error: string | null;
@@ -159,6 +161,19 @@ export function RoutinesProvider({ children }: { children: React.ReactNode }) {
     setRoutines((prev) => [routine, ...prev]);
   }, []);
 
+  const updateRoutine = useCallback((routine: Routine) => {
+    setRoutines((prev) =>
+      prev.map((r) => (r.id === routine.id ? routine : r))
+    );
+  }, []);
+
+  const deleteRoutine = useCallback((routineId: string) => {
+    setRoutines((prev) => prev.filter((r) => r.id !== routineId));
+    setWorkoutHistory((prev) =>
+      prev.filter((s) => s.routineId !== routineId)
+    );
+  }, []);
+
   const saveWorkoutSession = useCallback(
     async (input: { routineId: string; day: Day; log: ExerciseLog }) => {
       if (!userId) {
@@ -190,6 +205,8 @@ export function RoutinesProvider({ children }: { children: React.ReactNode }) {
     return {
       routines,
       addRoutine,
+      updateRoutine,
+      deleteRoutine,
       loading,
       saving,
       error,
@@ -199,6 +216,8 @@ export function RoutinesProvider({ children }: { children: React.ReactNode }) {
   }, [
     routines,
     addRoutine,
+    updateRoutine,
+    deleteRoutine,
     loading,
     saving,
     error,
