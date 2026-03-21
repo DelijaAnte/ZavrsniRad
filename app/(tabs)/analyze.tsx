@@ -1,16 +1,27 @@
 import ParallaxScrollView from "@/components/parallax-scroll-view";
+import { ExerciseProgressCard } from "@/components/analyze";
+import {
+  type AnalyzePeriod,
+  filterSessionsByPeriod,
+  progressionForExercise,
+} from "@/components/analyze/progression";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
-import React, { useMemo, useState } from "react";
-import { StyleSheet, View } from "react-native";
-
 import { useRoutines } from "@/components/routines/routines-store";
 import type { Day, Routine } from "@/components/routines/types";
 import { RoutineDayPicker } from "@/components/train/routine-day-picker";
-import { ExerciseProgressCard } from "@/components/analyze";
+import React, { useMemo, useState } from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+
+const PERIODS: { key: AnalyzePeriod; label: string }[] = [
+  { key: "week", label: "1 week" },
+  { key: "month", label: "1 month" },
+  { key: "all", label: "All time" },
+];
 
 export default function AnalyzeScreen() {
-  const { routines } = useRoutines();
+  const { routines, workoutHistory, loading } = useRoutines();
+  const [period, setPeriod] = useState<AnalyzePeriod>("month");
   const [routineId, setRoutineId] = useState<string | null>(null);
   const [day, setDay] = useState<Day | null>(null);
 
@@ -19,7 +30,28 @@ export default function AnalyzeScreen() {
     return routines.find((r) => r.id === routineId) ?? null;
   }, [routineId, routines]);
 
-  const exercisesForDay = (day && selectedRoutine?.exercisesByDay[day]) || [];
+  const exercisesForDay = useMemo(() => {
+    if (!day || !selectedRoutine) return [];
+    return selectedRoutine.exercisesByDay[day] ?? [];
+  }, [day, selectedRoutine]);
+
+  const sessionsInPeriod = useMemo(
+    () => filterSessionsByPeriod(workoutHistory, period),
+    [workoutHistory, period]
+  );
+
+  const analyzeRows = useMemo(() => {
+    if (!routineId || !day || !exercisesForDay.length) return [];
+    return exercisesForDay.map((exercise) => ({
+      exercise,
+      progression: progressionForExercise(
+        sessionsInPeriod,
+        routineId,
+        day,
+        exercise
+      ),
+    }));
+  }, [sessionsInPeriod, routineId, day, exercisesForDay]);
 
   function selectRoutine(nextId: string) {
     setRoutineId(nextId);
@@ -37,9 +69,34 @@ export default function AnalyzeScreen() {
       <ThemedView style={styles.headerRow}>
         <View style={styles.headerTitles}>
           <ThemedText type="title">Analyze</ThemedText>
-          <ThemedText>See progression per exercise (demo for now).</ThemedText>
+          <ThemedText>
+            Compare your first and latest log in the period (best set per session).
+          </ThemedText>
         </View>
       </ThemedView>
+
+      <ThemedText type="defaultSemiBold" style={styles.periodTitle}>
+        Period
+      </ThemedText>
+      <View style={styles.chipsRow}>
+        {PERIODS.map(({ key, label }) => {
+          const active = period === key;
+          return (
+            <TouchableOpacity
+              key={key}
+              accessibilityRole="button"
+              accessibilityState={{ selected: active }}
+              style={[styles.chip, active && styles.chipActive]}
+              onPress={() => setPeriod(key)}
+              activeOpacity={0.85}
+            >
+              <Text style={[styles.chipText, active && styles.chipTextActive]}>
+                {label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
 
       <RoutineDayPicker
         routines={routines}
@@ -51,17 +108,27 @@ export default function AnalyzeScreen() {
 
       {selectedRoutine && day ? (
         <ThemedView style={styles.section}>
-          <ThemedText type="subtitle">Progress</ThemedText>
+          <ThemedText type="subtitle">Progression</ThemedText>
 
-          {exercisesForDay.length ? (
+          {loading ? (
+            <ThemedText>Loading history…</ThemedText>
+          ) : analyzeRows.length ? (
             <View style={styles.progressList}>
-              {exercisesForDay.map((exercise, idx) => (
-                <ExerciseProgressCard
-                  key={exercise}
-                  exercise={exercise}
-                  progress={idx % 2 === 0 ? 1 : 2}
-                />
-              ))}
+              {analyzeRows.map(({ exercise, progression }) =>
+                progression ? (
+                  <ExerciseProgressCard
+                    key={exercise}
+                    progression={progression}
+                  />
+                ) : (
+                  <ThemedView key={exercise} style={styles.placeholderCard}>
+                    <ThemedText type="defaultSemiBold">{exercise}</ThemedText>
+                    <ThemedText style={styles.muted}>
+                      No saved sessions in this period for this routine and day.
+                    </ThemedText>
+                  </ThemedView>
+                )
+              )}
             </View>
           ) : (
             <ThemedText>No exercises for {day}.</ThemedText>
@@ -83,6 +150,36 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 4,
   },
+  periodTitle: {
+    marginTop: 4,
+    marginBottom: 6,
+  },
+  chipsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginBottom: 12,
+  },
+  chip: {
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    backgroundColor: "white",
+  },
+  chipActive: {
+    backgroundColor: "#cfeff6",
+    borderColor: "#7fbcc8",
+  },
+  chipText: {
+    color: "#0c2f35",
+    fontWeight: "600",
+    fontSize: 14,
+  },
+  chipTextActive: {
+    color: "#0c2f35",
+  },
   section: {
     gap: 8,
   },
@@ -90,5 +187,16 @@ const styles = StyleSheet.create({
     gap: 12,
     marginTop: 8,
   },
+  placeholderCard: {
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#eee",
+    backgroundColor: "#fafafa",
+    gap: 6,
+  },
+  muted: {
+    color: "#666",
+    fontSize: 14,
+  },
 });
-
