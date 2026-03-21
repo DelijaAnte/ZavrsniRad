@@ -1,4 +1,9 @@
-export { ExerciseProgressCard } from "./exercise-progress-card";
+export {
+  ExerciseProgressCard,
+  type ExerciseProgressCardView,
+} from "./exercise-progress-card";
+export type { ProgressionDetailView } from "./progression-views";
+export { TrainingConsistencyHeatmap } from "./training-consistency-heatmap";
 export type {
   AnalyzePeriod,
   ExerciseProgression,

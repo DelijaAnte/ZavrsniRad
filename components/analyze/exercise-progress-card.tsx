@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
+import { ExerciseProgressCharts } from "@/components/analyze/exercise-progress-charts";
 import type { ExerciseProgression } from "@/components/analyze/progression";
 import { ThemedText } from "@/components/themed-text";
 import { tintColorLight } from "@/constants/theme";
@@ -39,10 +40,15 @@ function deltaColor(delta: number | null, needsMoreSessions: boolean): string {
   return tintColorLight;
 }
 
+/** Table vs line charts inside each exercise card. */
+export type ExerciseProgressCardView = "table" | "graphs";
+
 export function ExerciseProgressCard({
   progression,
+  detailView,
 }: {
   progression: ExerciseProgression;
+  detailView: ExerciseProgressCardView;
 }) {
   const needsMoreSessions = progression.sessionsUsed < 2;
 
@@ -62,36 +68,43 @@ export function ExerciseProgressCard({
         Best weight & best reps per saved session on this day
       </Text>
 
-      <View style={styles.sessionList}>
-        <View style={styles.sessionHeaderRow}>
-          <Text style={[styles.sessionHead, styles.colDate]}>Date</Text>
-          <Text style={[styles.sessionHead, styles.colKg]}>kg</Text>
-          <Text style={[styles.sessionHead, styles.colReps]}>reps</Text>
-        </View>
-        {progression.rows.map((row, idx) => (
-          <View
-            key={`${row.at}-${idx}`}
-            style={[
-              styles.sessionRow,
-              idx % 2 === 1 && styles.sessionRowAlt,
-            ]}
-          >
-            <Text style={[styles.sessionCell, styles.colDate]} numberOfLines={1}>
-              {formatShortDate(row.at)}
-            </Text>
-            <Text style={[styles.sessionCell, styles.colKg]}>
-              {formatDashNumber(row.kg, true)}
-            </Text>
-            <Text style={[styles.sessionCell, styles.colReps]}>
-              {formatDashNumber(row.reps, false)}
-            </Text>
+      {detailView === "table" ? (
+        <View style={styles.sessionList}>
+          <View style={styles.sessionHeaderRow}>
+            <Text style={[styles.sessionHead, styles.colDate]}>Date</Text>
+            <Text style={[styles.sessionHead, styles.colKg]}>kg</Text>
+            <Text style={[styles.sessionHead, styles.colReps]}>reps</Text>
           </View>
-        ))}
-      </View>
+          {progression.rows.map((row, idx) => (
+            <View
+              key={`${row.at}-${idx}`}
+              style={[
+                styles.sessionRow,
+                idx % 2 === 1 && styles.sessionRowAlt,
+              ]}
+            >
+              <Text
+                style={[styles.sessionCell, styles.colDate]}
+                numberOfLines={1}
+              >
+                {formatShortDate(row.at)}
+              </Text>
+              <Text style={[styles.sessionCell, styles.colKg]}>
+                {formatDashNumber(row.kg, true)}
+              </Text>
+              <Text style={[styles.sessionCell, styles.colReps]}>
+                {formatDashNumber(row.reps, false)}
+              </Text>
+            </View>
+          ))}
+        </View>
+      ) : (
+        <ExerciseProgressCharts progression={progression} />
+      )}
 
       <View style={styles.summary}>
         <ThemedText type="defaultSemiBold" style={styles.summaryTitle}>
-          First → latest in period
+          First → latest
         </ThemedText>
 
         <View style={styles.metricBlock}>
@@ -133,13 +146,13 @@ export function ExerciseProgressCard({
 
       {needsMoreSessions ? (
         <ThemedText style={styles.hint}>
-          Save this day twice in the period to see change from first to latest
+          Save this day twice in your history to see change from first to latest
           session.
         </ThemedText>
       ) : (
         <ThemedText style={styles.hint}>
           {progression.sessionsUsed} session
-          {progression.sessionsUsed === 1 ? "" : "s"} in this period. Δ is — when
+          {progression.sessionsUsed === 1 ? "" : "s"} in your history. Δ is — when
           the first or latest session is missing that field.
         </ThemedText>
       )}

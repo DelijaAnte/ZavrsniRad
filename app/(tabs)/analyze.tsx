@@ -2,9 +2,12 @@ import React, { useMemo, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 import ParallaxScrollView from "@/components/parallax-scroll-view";
-import { ExerciseProgressCard } from "@/components/analyze";
 import {
-  type AnalyzePeriod,
+  ExerciseProgressCard,
+  TrainingConsistencyHeatmap,
+  type ProgressionDetailView,
+} from "@/components/analyze";
+import {
   filterSessionsByPeriod,
   progressionForExercise,
 } from "@/components/analyze/progression";
@@ -16,17 +19,18 @@ import { RoutineDayPicker } from "@/components/train/routine-day-picker";
 import { Colors, tintColorLight } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 
-const PERIODS: { key: AnalyzePeriod; label: string }[] = [
-  { key: "week", label: "1 week" },
-  { key: "month", label: "1 month" },
-  { key: "all", label: "All time" },
+const PROGRESSION_VIEWS: { key: ProgressionDetailView; label: string }[] = [
+  { key: "table", label: "Table" },
+  { key: "graphs", label: "Graphs" },
+  { key: "consistency", label: "Consistency" },
 ];
 
 export default function AnalyzeScreen() {
   const colorScheme = useColorScheme() ?? "light";
   const palette = Colors[colorScheme];
   const { routines, workoutHistory, loading } = useRoutines();
-  const [period, setPeriod] = useState<AnalyzePeriod>("month");
+  const [progressionDetailView, setProgressionDetailView] =
+    useState<ProgressionDetailView>("table");
   const [routineId, setRoutineId] = useState<string | null>(null);
   const [day, setDay] = useState<Day | null>(null);
 
@@ -41,8 +45,8 @@ export default function AnalyzeScreen() {
   }, [day, selectedRoutine]);
 
   const sessionsInPeriod = useMemo(
-    () => filterSessionsByPeriod(workoutHistory, period),
-    [workoutHistory, period]
+    () => filterSessionsByPeriod(workoutHistory, "all"),
+    [workoutHistory]
   );
 
   const analyzeRows = useMemo(() => {
@@ -80,43 +84,6 @@ export default function AnalyzeScreen() {
         </View>
       </ThemedView>
 
-      <ThemedText type="defaultSemiBold" style={styles.periodTitle}>
-        Period
-      </ThemedText>
-      <View style={styles.chipsRow}>
-        {PERIODS.map(({ key, label }) => {
-          const active = period === key;
-          return (
-            <TouchableOpacity
-              key={key}
-              accessibilityRole="button"
-              accessibilityState={{ selected: active }}
-              style={[
-                styles.chip,
-                active && {
-                  backgroundColor: palette.tintMuted,
-                  borderColor: palette.tintBorder,
-                },
-              ]}
-              onPress={() => setPeriod(key)}
-              activeOpacity={0.85}
-            >
-              <Text
-                style={[
-                  styles.chipText,
-                  active && {
-                    color:
-                      colorScheme === "light" ? tintColorLight : palette.tint,
-                  },
-                ]}
-              >
-                {label}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-
       <RoutineDayPicker
         routines={routines}
         selectedRoutineId={routineId}
@@ -125,12 +92,57 @@ export default function AnalyzeScreen() {
         onSelectDay={selectDay}
       />
 
-      {selectedRoutine && day ? (
+      {selectedRoutine && routineId && day ? (
         <ThemedView style={styles.section}>
           <ThemedText type="subtitle">Progression</ThemedText>
+          <ThemedText type="defaultSemiBold" style={styles.progressionViewTitle}>
+            View
+          </ThemedText>
+          <View style={styles.chipsRow}>
+            {PROGRESSION_VIEWS.map(({ key, label }) => {
+              const active = progressionDetailView === key;
+              return (
+                <TouchableOpacity
+                  key={key}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
+                  style={[
+                    styles.chip,
+                    active && {
+                      backgroundColor: palette.tintMuted,
+                      borderColor: palette.tintBorder,
+                    },
+                  ]}
+                  onPress={() => setProgressionDetailView(key)}
+                  activeOpacity={0.85}
+                >
+                  <Text
+                    style={[
+                      styles.chipText,
+                      active && {
+                        color:
+                          colorScheme === "light"
+                            ? tintColorLight
+                            : palette.tint,
+                      },
+                    ]}
+                  >
+                    {label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
 
           {loading ? (
             <ThemedText>Loading history…</ThemedText>
+          ) : progressionDetailView === "consistency" ? (
+            <TrainingConsistencyHeatmap
+              sessions={sessionsInPeriod}
+              routineId={routineId}
+              routineName={selectedRoutine.name}
+              templateDay={day}
+            />
           ) : analyzeRows.length ? (
             <View style={styles.progressList}>
               {analyzeRows.map(({ exercise, progression }) =>
@@ -138,12 +150,13 @@ export default function AnalyzeScreen() {
                   <ExerciseProgressCard
                     key={exercise}
                     progression={progression}
+                    detailView={progressionDetailView}
                   />
                 ) : (
                   <ThemedView key={exercise} style={styles.placeholderCard}>
                     <ThemedText type="defaultSemiBold">{exercise}</ThemedText>
                     <ThemedText style={styles.muted}>
-                      No saved sessions in this period for this routine and day.
+                      No saved sessions for this routine and day.
                     </ThemedText>
                   </ThemedView>
                 )
@@ -169,8 +182,8 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 4,
   },
-  periodTitle: {
-    marginTop: 4,
+  progressionViewTitle: {
+    marginTop: 2,
     marginBottom: 6,
   },
   chipsRow: {
