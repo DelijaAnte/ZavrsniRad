@@ -21,6 +21,7 @@ const MAPPING = {
   'calendar': 'event',
   'dumbbell.fill': 'fitness-center',
   'chart.bar.fill': 'bar-chart',
+  'person.circle.fill': 'account-circle',
 } as IconMapping;
 
 /**

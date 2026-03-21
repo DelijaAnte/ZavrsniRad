@@ -16,9 +16,6 @@ import type { Routine } from "@/components/routines/types";
 import { useRoutines } from "@/components/routines/routines-store";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
-import { Colors } from "@/constants/theme";
-import { useAuth } from "@/context/auth-context";
-import { useColorScheme } from "@/hooks/use-color-scheme";
 
 export default function PlanScreen() {
   const [modalVisible, setModalVisible] = useState(false);
@@ -27,9 +24,6 @@ export default function PlanScreen() {
   const { routines, addRoutine, updateRoutine, deleteRoutine, loading, saving, error } =
     useRoutines();
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const { signOut } = useAuth();
-  const colorScheme = useColorScheme() ?? "light";
-  const tint = Colors[colorScheme].tint;
 
   function openCreateModal() {
     if (loading) return;
@@ -85,15 +79,6 @@ export default function PlanScreen() {
           <ThemedText type="title">Routines</ThemedText>
           <ThemedText>Create or update your weekly plan.</ThemedText>
         </View>
-        <TouchableOpacity
-          accessibilityRole="button"
-          accessibilityLabel="Sign out"
-          style={[styles.signOut, { borderColor: tint }]}
-          onPress={() => void signOut()}
-          activeOpacity={0.85}
-        >
-          <Text style={[styles.signOutText, { color: tint }]}>Sign out</Text>
-        </TouchableOpacity>
         <TouchableOpacity
           accessibilityRole="button"
           accessibilityLabel="Create routine"
@@ -177,16 +162,6 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 4,
     minWidth: 0,
-  },
-  signOut: {
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    borderRadius: 10,
-    borderWidth: 1,
-  },
-  signOutText: {
-    fontSize: 13,
-    fontWeight: "600",
   },
   fabInline: {
     width: 44,
