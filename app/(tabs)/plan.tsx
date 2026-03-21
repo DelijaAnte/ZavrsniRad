@@ -16,6 +16,7 @@ import type { Routine } from "@/components/routines/types";
 import { useRoutines } from "@/components/routines/routines-store";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { Colors, tintColorLight } from "@/constants/theme";
 
 export default function PlanScreen() {
   const [modalVisible, setModalVisible] = useState(false);
@@ -72,17 +73,23 @@ export default function PlanScreen() {
 
   return (
     <ParallaxScrollView
-      headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
+      headerBackgroundColor={{
+        light: Colors.light.parallaxHeader,
+        dark: Colors.dark.parallaxHeader,
+      }}
     >
       <ThemedView style={styles.headerRow}>
         <View style={styles.headerTitles}>
-          <ThemedText type="title">Routines</ThemedText>
-          <ThemedText>Create or update your weekly plan.</ThemedText>
+          <ThemedText type="title">Plan</ThemedText>
         </View>
         <TouchableOpacity
           accessibilityRole="button"
           accessibilityLabel="Create routine"
-          style={[styles.fabInline, loading && styles.fabDisabled]}
+          style={[
+            styles.fabInline,
+            { backgroundColor: tintColorLight },
+            loading && styles.fabDisabled,
+          ]}
           onPress={openCreateModal}
           activeOpacity={0.85}
           disabled={loading}
@@ -100,7 +107,7 @@ export default function PlanScreen() {
 
       {loading ? (
         <ThemedView style={styles.loadingRow}>
-          <ActivityIndicator />
+          <ActivityIndicator color={tintColorLight} />
           <ThemedText>Loading your program…</ThemedText>
         </ThemedView>
       ) : null}
@@ -167,14 +174,14 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 14,
-    backgroundColor: "#A1CEDC",
     alignItems: "center",
     justifyContent: "center",
   },
   fabInlineText: {
     fontSize: 30,
     lineHeight: 32,
-    color: "#0c2f35",
+    color: "#fff",
+    fontWeight: "300",
   },
   section: {
     gap: 8,

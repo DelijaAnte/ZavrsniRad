@@ -72,20 +72,24 @@ export default function ProfileScreen() {
 
   return (
     <ParallaxScrollView
-      headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
+      headerBackgroundColor={{
+        light: Colors.light.parallaxHeader,
+        dark: Colors.dark.parallaxHeader,
+      }}
     >
       <ThemedView style={styles.header}>
         <ThemedText type="title">Profile</ThemedText>
-        <ThemedText>Signed-in account</ThemedText>
       </ThemedView>
 
       {!initialized ? (
         <ThemedView style={styles.loadingRow}>
-          <ActivityIndicator />
+          <ActivityIndicator color={tint} />
           <ThemedText>Loading…</ThemedText>
         </ThemedView>
       ) : (
-        <ThemedView style={styles.card}>
+        <ThemedView
+          style={[styles.card, { borderColor: Colors[colorScheme].tintBorder }]}
+        >
           {displayName ? (
             <>
               <ThemedText type="defaultSemiBold">{displayName}</ThemedText>

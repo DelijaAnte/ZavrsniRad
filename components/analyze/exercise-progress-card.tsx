@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from "react-native";
 
 import type { ExerciseProgression } from "@/components/analyze/progression";
 import { ThemedText } from "@/components/themed-text";
+import { tintColorLight } from "@/constants/theme";
 
 function formatKg(value: number): string {
   return Number.isInteger(value) ? `${value}` : value.toFixed(1);
@@ -35,7 +36,7 @@ function deltaColor(delta: number | null, needsMoreSessions: boolean): string {
   if (delta == null) return "#666";
   if (delta > 0) return "#1a6b4a";
   if (delta < 0) return "#8b2c2c";
-  return "#25707a";
+  return tintColorLight;
 }
 
 export function ExerciseProgressCard({

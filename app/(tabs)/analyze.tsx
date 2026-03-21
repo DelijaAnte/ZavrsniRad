@@ -1,3 +1,6 @@
+import React, { useMemo, useState } from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+
 import ParallaxScrollView from "@/components/parallax-scroll-view";
 import { ExerciseProgressCard } from "@/components/analyze";
 import {
@@ -10,8 +13,8 @@ import { ThemedView } from "@/components/themed-view";
 import { useRoutines } from "@/components/routines/routines-store";
 import type { Day, Routine } from "@/components/routines/types";
 import { RoutineDayPicker } from "@/components/train/routine-day-picker";
-import React, { useMemo, useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Colors, tintColorLight } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 
 const PERIODS: { key: AnalyzePeriod; label: string }[] = [
   { key: "week", label: "1 week" },
@@ -20,6 +23,8 @@ const PERIODS: { key: AnalyzePeriod; label: string }[] = [
 ];
 
 export default function AnalyzeScreen() {
+  const colorScheme = useColorScheme() ?? "light";
+  const palette = Colors[colorScheme];
   const { routines, workoutHistory, loading } = useRoutines();
   const [period, setPeriod] = useState<AnalyzePeriod>("month");
   const [routineId, setRoutineId] = useState<string | null>(null);
@@ -64,15 +69,14 @@ export default function AnalyzeScreen() {
 
   return (
     <ParallaxScrollView
-      headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
+      headerBackgroundColor={{
+        light: Colors.light.parallaxHeader,
+        dark: Colors.dark.parallaxHeader,
+      }}
     >
       <ThemedView style={styles.headerRow}>
         <View style={styles.headerTitles}>
           <ThemedText type="title">Analyze</ThemedText>
-          <ThemedText>
-            Each saved session on this day lists best kg and best reps; summary is
-            first vs latest in the period.
-          </ThemedText>
         </View>
       </ThemedView>
 
@@ -87,11 +91,25 @@ export default function AnalyzeScreen() {
               key={key}
               accessibilityRole="button"
               accessibilityState={{ selected: active }}
-              style={[styles.chip, active && styles.chipActive]}
+              style={[
+                styles.chip,
+                active && {
+                  backgroundColor: palette.tintMuted,
+                  borderColor: palette.tintBorder,
+                },
+              ]}
               onPress={() => setPeriod(key)}
               activeOpacity={0.85}
             >
-              <Text style={[styles.chipText, active && styles.chipTextActive]}>
+              <Text
+                style={[
+                  styles.chipText,
+                  active && {
+                    color:
+                      colorScheme === "light" ? tintColorLight : palette.tint,
+                  },
+                ]}
+              >
                 {label}
               </Text>
             </TouchableOpacity>
@@ -169,17 +187,10 @@ const styles = StyleSheet.create({
     borderColor: "#ddd",
     backgroundColor: "white",
   },
-  chipActive: {
-    backgroundColor: "#cfeff6",
-    borderColor: "#7fbcc8",
-  },
   chipText: {
     color: "#0c2f35",
     fontWeight: "600",
     fontSize: 14,
-  },
-  chipTextActive: {
-    color: "#0c2f35",
   },
   section: {
     gap: 8,

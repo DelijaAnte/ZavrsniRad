@@ -3,6 +3,8 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 import { ThemedText } from "@/components/themed-text";
 import type { Routine } from "@/components/routines/types";
+import { Colors, tintColorLight } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 
 export function RoutineCard({
   routine,
@@ -17,6 +19,8 @@ export function RoutineCard({
   onEdit: (routine: Routine) => void;
   onDelete: (routine: Routine) => void;
 }) {
+  const colorScheme = useColorScheme() ?? "light";
+  const palette = Colors[colorScheme];
   const totalExercises = useMemo(() => {
     return routine.days.reduce(
       (sum, d) => sum + (routine.exercisesByDay[d]?.length ?? 0),
@@ -69,13 +73,29 @@ export function RoutineCard({
 
           <View style={styles.actions}>
             <TouchableOpacity
-              style={styles.actionSecondary}
+              style={[
+                styles.actionSecondary,
+                {
+                  borderColor: palette.tintBorder,
+                  backgroundColor: palette.tintMuted,
+                },
+              ]}
               onPress={() => onEdit(routine)}
               activeOpacity={0.85}
               accessibilityRole="button"
               accessibilityLabel={`Edit ${routine.name}`}
             >
-              <Text style={styles.actionSecondaryText}>Edit</Text>
+              <Text
+                style={[
+                  styles.actionSecondaryText,
+                  {
+                    color:
+                      colorScheme === "light" ? tintColorLight : palette.tint,
+                  },
+                ]}
+              >
+                Edit
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.actionDanger}
@@ -131,12 +151,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#7fbcc8",
-    backgroundColor: "#e8f6f9",
   },
   actionSecondaryText: {
     fontWeight: "800",
-    color: "#0c2f35",
   },
   actionDanger: {
     paddingVertical: 10,

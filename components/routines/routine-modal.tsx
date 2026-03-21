@@ -13,6 +13,7 @@ import {
 import { ThemedText } from "@/components/themed-text";
 import type { Day, Routine } from "@/components/routines/types";
 import { DAYS } from "@/components/routines/types";
+import { Colors, tintColorLight } from "@/constants/theme";
 
 export function RoutineModal({
   visible,
@@ -27,6 +28,10 @@ export function RoutineModal({
   initialRoutine: Routine | null;
   onSave: (routine: Routine) => void;
 }) {
+  const selectedChipStyle = {
+    backgroundColor: Colors.light.tintMuted,
+    borderColor: Colors.light.tintBorder,
+  };
   const [name, setName] = useState("");
   const [selectedDays, setSelectedDays] = useState<Day[]>([]);
   const [activeDay, setActiveDay] = useState<Day | null>(null);
@@ -198,11 +203,14 @@ export function RoutineModal({
                   <TouchableOpacity
                     key={d}
                     onPress={() => toggleDay(d)}
-                    style={[styles.chip, active && styles.chipActive]}
+                    style={[styles.chip, active && selectedChipStyle]}
                     activeOpacity={0.85}
                   >
                     <Text
-                      style={[styles.chipText, active && styles.chipTextActive]}
+                      style={[
+                        styles.chipText,
+                        active && { color: tintColorLight },
+                      ]}
                     >
                       {d}
                     </Text>
@@ -224,13 +232,13 @@ export function RoutineModal({
                       <TouchableOpacity
                         key={d}
                         onPress={() => setActiveDay(d)}
-                        style={[styles.chip, isActive && styles.chipActive]}
+                        style={[styles.chip, isActive && selectedChipStyle]}
                         activeOpacity={0.85}
                       >
                         <Text
                           style={[
                             styles.chipText,
-                            isActive && styles.chipTextActive,
+                            isActive && { color: tintColorLight },
                           ]}
                         >
                           {d}
@@ -301,7 +309,11 @@ export function RoutineModal({
               />
               <TouchableOpacity
                 onPress={addExercise}
-                style={[styles.addButton, !activeDay && { opacity: 0.5 }]}
+                style={[
+                  styles.addButton,
+                  { backgroundColor: tintColorLight },
+                  !activeDay && { opacity: 0.5 },
+                ]}
                 activeOpacity={0.85}
                 disabled={!activeDay}
               >
@@ -321,6 +333,7 @@ export function RoutineModal({
               <TouchableOpacity
                 style={[
                   styles.primaryButton,
+                  { backgroundColor: tintColorLight },
                   !canSubmit && styles.primaryButtonDisabled,
                 ]}
                 onPress={submitRoutine}
@@ -388,16 +401,9 @@ const styles = StyleSheet.create({
     borderColor: "#ddd",
     backgroundColor: "white",
   },
-  chipActive: {
-    backgroundColor: "#cfeff6",
-    borderColor: "#7fbcc8",
-  },
   chipText: {
     color: "#0c2f35",
     fontWeight: "600",
-  },
-  chipTextActive: {
-    color: "#0c2f35",
   },
   addExerciseRow: {
     flexDirection: "row",
@@ -413,10 +419,9 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 12,
     borderRadius: 8,
-    backgroundColor: "#A1CEDC",
   },
   addButtonText: {
-    color: "#0c2f35",
+    color: "#fff",
     fontWeight: "700",
   },
   exerciseItem: {
@@ -472,7 +477,6 @@ const styles = StyleSheet.create({
   primaryButton: {
     paddingVertical: 10,
     paddingHorizontal: 14,
-    backgroundColor: "#25707a",
     borderRadius: 10,
   },
   primaryButtonText: {

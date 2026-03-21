@@ -5,7 +5,8 @@
 
 import { Platform } from 'react-native';
 
-const tintColorLight = '#0a7ea4';
+/** Primary brand blue (tab accent, key actions, chips). */
+export const tintColorLight = '#0a7ea4';
 const tintColorDark = '#fff';
 
 export const Colors = {
@@ -16,6 +17,13 @@ export const Colors = {
     icon: '#687076',
     tabIconDefault: '#687076',
     tabIconSelected: tintColorLight,
+    /** Soft fill for selected chips / secondary surfaces */
+    tintMuted: '#e3f3f8',
+    /** Border for selected chips and outline controls */
+    tintBorder: '#5aa3bd',
+    /** Parallax header behind tab content */
+    parallaxHeader: '#aedce8',
+    tabBarBackground: '#f7fbfc',
   },
   dark: {
     text: '#ECEDEE',
@@ -24,6 +32,10 @@ export const Colors = {
     icon: '#9BA1A6',
     tabIconDefault: '#9BA1A6',
     tabIconSelected: tintColorDark,
+    tintMuted: '#243a42',
+    tintBorder: '#4d8fa3',
+    parallaxHeader: '#1D3D47',
+    tabBarBackground: '#151718',
   },
 };
 

@@ -4,6 +4,8 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import type { Day, Routine } from "@/components/routines/types";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { Colors, tintColorLight } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 
 type Props = {
   routines: Routine[];
@@ -20,6 +22,8 @@ export function RoutineDayPicker({
   onSelectRoutine,
   onSelectDay,
 }: Props) {
+  const colorScheme = useColorScheme() ?? "light";
+  const palette = Colors[colorScheme];
   const selectedRoutine = routines.find((r) => r.id === selectedRoutineId) ?? null;
   const availableDays = selectedRoutine?.days ?? [];
 
@@ -35,10 +39,24 @@ export function RoutineDayPicker({
                 <TouchableOpacity
                   key={r.id}
                   onPress={() => onSelectRoutine(r.id)}
-                  style={[styles.chip, active && styles.chipActive]}
+                  style={[
+                    styles.chip,
+                    active && {
+                      backgroundColor: palette.tintMuted,
+                      borderColor: palette.tintBorder,
+                    },
+                  ]}
                   activeOpacity={0.85}
                 >
-                  <Text style={[styles.chipText, active && styles.chipTextActive]}>
+                  <Text
+                    style={[
+                      styles.chipText,
+                      active && {
+                        color:
+                          colorScheme === "light" ? tintColorLight : palette.tint,
+                      },
+                    ]}
+                  >
                     {r.name}
                   </Text>
                 </TouchableOpacity>
@@ -64,11 +82,25 @@ export function RoutineDayPicker({
                   <TouchableOpacity
                     key={d}
                     onPress={() => onSelectDay(d)}
-                    style={[styles.chip, active && styles.chipActive]}
+                    style={[
+                      styles.chip,
+                      active && {
+                        backgroundColor: palette.tintMuted,
+                        borderColor: palette.tintBorder,
+                      },
+                    ]}
                     activeOpacity={0.85}
                   >
                     <Text
-                      style={[styles.chipText, active && styles.chipTextActive]}
+                      style={[
+                        styles.chipText,
+                        active && {
+                          color:
+                            colorScheme === "light"
+                              ? tintColorLight
+                              : palette.tint,
+                        },
+                      ]}
                     >
                       {d}
                     </Text>
@@ -110,15 +142,8 @@ const styles = StyleSheet.create({
     borderColor: "#ddd",
     backgroundColor: "white",
   },
-  chipActive: {
-    backgroundColor: "#cfeff6",
-    borderColor: "#7fbcc8",
-  },
   chipText: {
     color: "#0c2f35",
     fontWeight: "600",
-  },
-  chipTextActive: {
-    color: "#0c2f35",
   },
 });

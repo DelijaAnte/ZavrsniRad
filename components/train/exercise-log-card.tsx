@@ -9,6 +9,7 @@ import {
 
 import type { SetEntry } from "@/components/train/types";
 import { ThemedText } from "@/components/themed-text";
+import { tintColorLight } from "@/constants/theme";
 
 type Props = {
   exercise: string;
@@ -171,10 +172,10 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 14,
     borderRadius: 10,
-    backgroundColor: "#A1CEDC",
+    backgroundColor: tintColorLight,
   },
   addButtonText: {
-    color: "#0c2f35",
+    color: "#fff",
     fontWeight: "800",
   },
 });

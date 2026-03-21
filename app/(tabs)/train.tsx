@@ -11,6 +11,7 @@ import {
 } from "@/components/train";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { Colors, tintColorLight } from "@/constants/theme";
 
 export default function TrainScreen() {
   const { routines, saveWorkoutSession, loading, saving } = useRoutines();
@@ -56,12 +57,14 @@ export default function TrainScreen() {
 
   return (
     <ParallaxScrollView
-      headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
+      headerBackgroundColor={{
+        light: Colors.light.parallaxHeader,
+        dark: Colors.dark.parallaxHeader,
+      }}
     >
       <ThemedView style={styles.headerRow}>
         <View style={styles.headerTitles}>
           <ThemedText type="title">Train</ThemedText>
-          <ThemedText>Pick a routine and log today&apos;s work.</ThemedText>
         </View>
       </ThemedView>
 
@@ -99,6 +102,7 @@ export default function TrainScreen() {
             accessibilityLabel="Save workout session"
             style={[
               styles.saveSession,
+              { backgroundColor: tintColorLight },
               (loading || saving) && styles.saveSessionDisabled,
             ]}
             onPress={() => void handleSaveSession()}
@@ -138,7 +142,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 18,
     borderRadius: 12,
-    backgroundColor: "#25707a",
   },
   saveSessionDisabled: {
     opacity: 0.55,
