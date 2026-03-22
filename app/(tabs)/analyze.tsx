@@ -93,100 +93,97 @@ export default function AnalyzeScreen() {
         onSelectDay={selectDay}
       />
 
-      {selectedRoutine && routineId && day ? (
-        <ThemedView style={styles.section}>
-          <ThemedText type="subtitle">Progression</ThemedText>
-          <ThemedText type="defaultSemiBold" style={styles.progressionViewTitle}>
-            View
-          </ThemedText>
-          <View style={styles.chipsRow}>
-            {PROGRESSION_VIEWS.map(({ key, label }) => {
-              const active = progressionDetailView === key;
-              return (
-                <TouchableOpacity
-                  key={key}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: active }}
+      <ThemedView style={styles.section}>
+        <ThemedText type="subtitle">Progression</ThemedText>
+        <ThemedText type="defaultSemiBold" style={styles.progressionViewTitle}>
+          View
+        </ThemedText>
+        <View style={styles.chipsRow}>
+          {PROGRESSION_VIEWS.map(({ key, label }) => {
+            const active = progressionDetailView === key;
+            return (
+              <TouchableOpacity
+                key={key}
+                accessibilityRole="button"
+                accessibilityState={{ selected: active }}
+                style={[
+                  styles.chip,
+                  {
+                    borderColor: active
+                      ? palette.tintBorder
+                      : isDark
+                        ? "#2f3638"
+                        : "#ddd",
+                    backgroundColor: active
+                      ? palette.tintMuted
+                      : isDark
+                        ? "#1e2224"
+                        : "#fff",
+                  },
+                ]}
+                onPress={() => setProgressionDetailView(key)}
+                activeOpacity={0.85}
+              >
+                <Text
                   style={[
-                    styles.chip,
+                    styles.chipText,
+                    active
+                      ? {
+                          color:
+                            colorScheme === "light"
+                              ? tintColorLight
+                              : palette.tint,
+                        }
+                      : { color: isDark ? palette.text : "#0c2f35" },
+                  ]}
+                >
+                  {label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        {loading ? (
+          <ThemedText>Loading history…</ThemedText>
+        ) : progressionDetailView === "consistency" ? (
+          <TrainingConsistencyHeatmap sessions={sessionsInPeriod} />
+        ) : !selectedRoutine || !routineId || !day ? (
+          <ThemedText>
+            Select a routine and day above to view exercise progression.
+          </ThemedText>
+        ) : analyzeRows.length ? (
+          <View style={styles.progressList}>
+            {analyzeRows.map(({ exercise, progression }) =>
+              progression ? (
+                <ExerciseProgressCard
+                  key={exercise}
+                  progression={progression}
+                  detailView={progressionDetailView}
+                />
+              ) : (
+                <ThemedView
+                  key={exercise}
+                  style={[
+                    styles.placeholderCard,
                     {
-                      borderColor: active
-                        ? palette.tintBorder
-                        : isDark
-                          ? "#2f3638"
-                          : "#ddd",
-                      backgroundColor: active
-                        ? palette.tintMuted
-                        : isDark
-                          ? "#1e2224"
-                          : "#fff",
+                      backgroundColor: isDark ? "#1e2224" : "#fafafa",
+                      borderColor: isDark ? "#2f3638" : "#eee",
                     },
                   ]}
-                  onPress={() => setProgressionDetailView(key)}
-                  activeOpacity={0.85}
                 >
-                  <Text
-                    style={[
-                      styles.chipText,
-                      active
-                        ? {
-                            color:
-                              colorScheme === "light"
-                                ? tintColorLight
-                                : palette.tint,
-                          }
-                        : { color: isDark ? palette.text : "#0c2f35" },
-                    ]}
-                  >
-                    {label}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
+                  <ThemedText type="defaultSemiBold">{exercise}</ThemedText>
+                  <ThemedText style={styles.muted}>
+                    No saved sessions for this routine and day.
+                  </ThemedText>
+                </ThemedView>
+              )
+            )}
           </View>
-
-          {loading ? (
-            <ThemedText>Loading history…</ThemedText>
-          ) : progressionDetailView === "consistency" ? (
-            <TrainingConsistencyHeatmap
-              sessions={sessionsInPeriod}
-              routineId={routineId}
-              routineName={selectedRoutine.name}
-              templateDay={day}
-            />
-          ) : analyzeRows.length ? (
-            <View style={styles.progressList}>
-              {analyzeRows.map(({ exercise, progression }) =>
-                progression ? (
-                  <ExerciseProgressCard
-                    key={exercise}
-                    progression={progression}
-                    detailView={progressionDetailView}
-                  />
-                ) : (
-                  <ThemedView
-                    key={exercise}
-                    style={[
-                      styles.placeholderCard,
-                      {
-                        backgroundColor: isDark ? "#1e2224" : "#fafafa",
-                        borderColor: isDark ? "#2f3638" : "#eee",
-                      },
-                    ]}
-                  >
-                    <ThemedText type="defaultSemiBold">{exercise}</ThemedText>
-                    <ThemedText style={styles.muted}>
-                      No saved sessions for this routine and day.
-                    </ThemedText>
-                  </ThemedView>
-                )
-              )}
-            </View>
-          ) : (
-            <ThemedText>No exercises for {day}.</ThemedText>
-          )}
-        </ThemedView>
-      ) : null}
+        ) : (
+          <ThemedText>No exercises for {day}.</ThemedText>
+        )}
+      </ThemedView>
     </ParallaxScrollView>
   );
 }

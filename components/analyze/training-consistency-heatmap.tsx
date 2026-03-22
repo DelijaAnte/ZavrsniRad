@@ -10,7 +10,7 @@ import {
 import Svg, { G, Rect, Text as SvgText } from "react-native-svg";
 
 import { ThemedText } from "@/components/themed-text";
-import type { Day, WorkoutSession } from "@/components/routines/types";
+import type { WorkoutSession } from "@/components/routines/types";
 import { Colors, tintColorLight } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { hexToRgba } from "@/utils/hex-to-rgba";
@@ -29,14 +29,10 @@ function monthKeyFromParts(year: number, monthIndex: number): string {
   return `${year}-${String(monthIndex + 1).padStart(2, "0")}`;
 }
 
-function contributionCountsByDayKey(
-  sessions: WorkoutSession[],
-  routineId: string,
-  templateDay: Day
-): Map<number, number> {
+/** Count saved sessions per local calendar day (any routine / template day). */
+function sessionCountsByCalendarDay(sessions: WorkoutSession[]): Map<number, number> {
   const counts = new Map<number, number>();
   for (const s of sessions) {
-    if (s.routineId !== routineId || s.day !== templateDay) continue;
     const key = localDayStartFromIso(s.performedAt);
     if (key == null) continue;
     counts.set(key, (counts.get(key) ?? 0) + 1);
@@ -68,14 +64,8 @@ function listMonthsBetween(
 
 export function TrainingConsistencyHeatmap({
   sessions,
-  routineId,
-  routineName,
-  templateDay,
 }: {
   sessions: WorkoutSession[];
-  routineId: string;
-  routineName: string;
-  templateDay: Day;
 }) {
   const colorScheme = useColorScheme() ?? "light";
   const palette = Colors[colorScheme];
@@ -91,20 +81,19 @@ export function TrainingConsistencyHeatmap({
   const cell = squareSize + gutter;
 
   const countsByDay = useMemo(
-    () => contributionCountsByDayKey(sessions, routineId, templateDay),
-    [sessions, routineId, templateDay]
+    () => sessionCountsByCalendarDay(sessions),
+    [sessions]
   );
 
   const { rangeStart, rangeEnd } = useMemo(() => {
     const endDate = startOfLocalDay(new Date());
     let oldest = endDate.getTime();
     for (const s of sessions) {
-      if (s.routineId !== routineId || s.day !== templateDay) continue;
       const k = localDayStartFromIso(s.performedAt);
       if (k != null) oldest = Math.min(oldest, k);
     }
     return { rangeStart: new Date(oldest), rangeEnd: endDate };
-  }, [sessions, routineId, templateDay]);
+  }, [sessions]);
 
   const availableMonths = useMemo(() => {
     const list = listMonthsBetween(rangeStart, rangeEnd);
@@ -249,11 +238,17 @@ export function TrainingConsistencyHeatmap({
 
   return (
     <View style={[styles.card, { backgroundColor: cardBg, borderColor: cardBorder }]}>
-      <ThemedText type="defaultSemiBold">{routineName}</ThemedText>
+      <ThemedText type="defaultSemiBold">Training consistency</ThemedText>
+      {distinctDaysWithTraining > 0 ? (
+        <ThemedText style={styles.muted}>
+          Highlights every calendar day you saved any workout (all routines).
+        </ThemedText>
+      ) : null}
 
       {distinctDaysWithTraining === 0 ? (
-        <ThemedText style={styles.muted}>
-          No completed sessions for this routine on {templateDay}.
+        <ThemedText style={styles.emptyHint}>
+          No saved workouts yet. Log a session on the Train tab to fill this
+          calendar.
         </ThemedText>
       ) : (
         <>
@@ -474,6 +469,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   muted: {
+    fontSize: 13,
+    opacity: 0.85,
+  },
+  emptyHint: {
     fontSize: 14,
+    marginTop: 4,
   },
 });
