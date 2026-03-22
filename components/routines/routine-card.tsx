@@ -1,3 +1,4 @@
+import Ionicons from "@expo/vector-icons/Ionicons";
 import React, { useMemo } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
@@ -5,6 +6,9 @@ import { ThemedText } from "@/components/themed-text";
 import type { Routine } from "@/components/routines/types";
 import { Colors, tintColorLight } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+
+/** Metadata line on light cards — blue-gray per design reference */
+const META_MUTED_LIGHT = "#546E7A";
 
 export function RoutineCard({
   routine,
@@ -21,6 +25,7 @@ export function RoutineCard({
 }) {
   const colorScheme = useColorScheme() ?? "light";
   const palette = Colors[colorScheme];
+  const isDark = colorScheme === "dark";
   const totalExercises = useMemo(() => {
     return routine.days.reduce(
       (sum, d) => sum + (routine.exercisesByDay[d]?.length ?? 0),
@@ -28,11 +33,29 @@ export function RoutineCard({
     );
   }, [routine.days, routine.exercisesByDay]);
 
-  const cardBorder = colorScheme === "dark" ? "#2f3638" : "#eee";
-  const dividerBorder = colorScheme === "dark" ? "#2f3638" : "#f0f0f0";
+  const cardBg = isDark ? "#1e2224" : "#FFFFFF";
+  const cardBorder = isDark ? "#2f3638" : "#E8EBED";
+  const dividerBorder = isDark ? "#2f3638" : "#EEF0F2";
+  const metaColor = isDark ? palette.icon : META_MUTED_LIGHT;
+
+  const cardShadow = isDark
+    ? {}
+    : {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.06,
+        shadowRadius: 4,
+        elevation: 2,
+      };
 
   return (
-    <View style={[styles.routineCard, { borderColor: cardBorder }]}>
+    <View
+      style={[
+        styles.routineCard,
+        { backgroundColor: cardBg, borderColor: cardBorder },
+        cardShadow,
+      ]}
+    >
       <TouchableOpacity
         style={styles.headerPress}
         onPress={onToggleExpand}
@@ -41,8 +64,25 @@ export function RoutineCard({
         accessibilityLabel={`${expanded ? "Collapse" : "Expand"} ${routine.name}`}
       >
         <View style={styles.routineHeader}>
-          <ThemedText type="subtitle">{routine.name}</ThemedText>
-          <ThemedText>{`${routine.days.length} ${routine.days.length === 1 ? "day" : "days"} • ${totalExercises} exercises`}</ThemedText>
+          <ThemedText type="subtitle" style={styles.routineTitle} numberOfLines={3}>
+            {routine.name}
+          </ThemedText>
+          <View style={styles.metaRow}>
+            <View style={styles.metaItem}>
+              <Ionicons name="calendar-outline" size={18} color={metaColor} />
+              <Text style={[styles.metaText, { color: metaColor }]}>
+                {routine.days.length}{" "}
+                {routine.days.length === 1 ? "day" : "days"}
+              </Text>
+            </View>
+            <View style={styles.metaItem}>
+              <Ionicons name="barbell-outline" size={18} color={metaColor} />
+              <Text style={[styles.metaText, { color: metaColor }]}>
+                {totalExercises}{" "}
+                {totalExercises === 1 ? "exercise" : "exercises"}
+              </Text>
+            </View>
+          </View>
         </View>
       </TouchableOpacity>
 
@@ -120,21 +160,43 @@ export function RoutineCard({
 
 const styles = StyleSheet.create({
   routineCard: {
-    padding: 12,
-    borderRadius: 8,
+    padding: 16,
+    borderRadius: 14,
     borderWidth: 1,
-    marginBottom: 8,
+    marginBottom: 14,
   },
   headerPress: {
-    borderRadius: 6,
+    borderRadius: 10,
   },
   routineHeader: {
+    flexDirection: "column",
+    alignItems: "stretch",
+    gap: 10,
+  },
+  routineTitle: {
+    fontSize: 20,
+    lineHeight: 26,
+    fontWeight: "700",
+  },
+  metaRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    gap: 12,
+    flexWrap: "wrap",
+    alignItems: "center",
+    columnGap: 20,
+    rowGap: 8,
+  },
+  metaItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  metaText: {
+    fontSize: 15,
+    lineHeight: 20,
+    fontWeight: "500",
   },
   routineBody: {
-    marginTop: 8,
+    marginTop: 12,
     gap: 6,
   },
   dayHeader: {
@@ -144,8 +206,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 10,
-    marginTop: 14,
-    paddingTop: 12,
+    marginTop: 16,
+    paddingTop: 14,
     borderTopWidth: 1,
   },
   actionSecondary: {
