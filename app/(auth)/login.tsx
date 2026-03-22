@@ -5,7 +5,9 @@ import {
   Platform,
   Pressable,
   StyleSheet,
+  Text,
   TextInput,
+  View,
 } from "react-native";
 
 import { useRouter } from "expo-router";
@@ -65,90 +67,117 @@ export default function LoginScreen() {
   }
 
   return (
-    <ThemedView style={[styles.screen, { paddingTop: insets.top + 24 }]}>
+    <ThemedView style={styles.screen}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={styles.flex}
+        keyboardVerticalOffset={Platform.OS === "ios" ? insets.top : 0}
       >
-        <ThemedText type="title" style={styles.title}>
-          GymBuddy
-        </ThemedText>
-        <ThemedText style={styles.subtitle}>
-          {mode === "signIn" ? "Sign in to continue" : "Create an account"}
-        </ThemedText>
-
-        <TextInput
-          style={[
-            styles.input,
-            {
-              color: palette.text,
-              borderColor: palette.icon,
-              backgroundColor: colorScheme === "dark" ? "#1c1c1e" : "#f2f2f7",
-            },
-          ]}
-          placeholder="Email"
-          placeholderTextColor={palette.icon}
-          autoCapitalize="none"
-          autoCorrect={false}
-          keyboardType="email-address"
-          value={email}
-          onChangeText={setEmail}
-        />
-        <TextInput
-          style={[
-            styles.input,
-            {
-              color: palette.text,
-              borderColor: palette.icon,
-              backgroundColor: colorScheme === "dark" ? "#1c1c1e" : "#f2f2f7",
-            },
-          ]}
-          placeholder="Password"
-          placeholderTextColor={palette.icon}
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
-
-        {message ? (
-          <ThemedText style={styles.message}>{message}</ThemedText>
-        ) : null}
-
-        <Pressable
-          style={({ pressed }) => [
-            styles.primaryButton,
-            { backgroundColor: palette.tint, opacity: pressed ? 0.85 : 1 },
-          ]}
-          onPress={onSubmit}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color={colorScheme === "dark" ? "#111" : "#fff"} />
-          ) : (
+        <View style={styles.layout}>
+          <View style={[styles.centerBlock, { paddingTop: insets.top }]}>
             <ThemedText
-              style={[
-                styles.primaryButtonText,
-                { color: colorScheme === "dark" ? "#111" : "#fff" },
-              ]}
+              type="title"
+              style={styles.title}
+              includeFontPadding={Platform.OS === "android" ? false : undefined}
             >
-              {mode === "signIn" ? "Sign in" : "Sign up"}
+              GymBuddy
             </ThemedText>
-          )}
-        </Pressable>
 
-        <Pressable
-          onPress={() => {
-            setMessage(null);
-            setMode((m) => (m === "signIn" ? "signUp" : "signIn"));
-          }}
-          style={styles.switchRow}
-        >
-          <ThemedText style={{ color: palette.tint }}>
-            {mode === "signIn"
-              ? "Need an account? Sign up"
-              : "Already have an account? Sign in"}
-          </ThemedText>
-        </Pressable>
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  color: palette.text,
+                  borderColor: palette.icon,
+                  backgroundColor: colorScheme === "dark" ? "#1c1c1e" : "#f2f2f7",
+                },
+              ]}
+              placeholder="Email"
+              placeholderTextColor={palette.icon}
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="email-address"
+              value={email}
+              onChangeText={setEmail}
+            />
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  color: palette.text,
+                  borderColor: palette.icon,
+                  backgroundColor: colorScheme === "dark" ? "#1c1c1e" : "#f2f2f7",
+                },
+              ]}
+              placeholder="Password"
+              placeholderTextColor={palette.icon}
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+            />
+
+            {message ? (
+              <ThemedText style={styles.message}>{message}</ThemedText>
+            ) : null}
+
+            <Pressable
+              style={({ pressed }) => [
+                styles.primaryButton,
+                { backgroundColor: palette.tint, opacity: pressed ? 0.85 : 1 },
+              ]}
+              onPress={onSubmit}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color={colorScheme === "dark" ? "#111" : "#fff"} />
+              ) : (
+                <ThemedText
+                  style={[
+                    styles.primaryButtonText,
+                    { color: colorScheme === "dark" ? "#111" : "#fff" },
+                  ]}
+                >
+                  {mode === "signIn" ? "Sign in" : "Sign up"}
+                </ThemedText>
+              )}
+            </Pressable>
+          </View>
+
+          <View
+            style={[styles.bottomArea, { paddingBottom: Math.max(insets.bottom, 16) + 8 }]}
+          >
+            <Pressable
+              onPress={() => {
+                setMessage(null);
+                setMode((m) => (m === "signIn" ? "signUp" : "signIn"));
+              }}
+              style={styles.switchRow}
+              android_ripple={{ color: "rgba(10, 126, 164, 0.12)" }}
+            >
+              <Text style={[styles.switchPlain, { color: palette.text }]}>
+                {mode === "signIn"
+                  ? [
+                      "Need an account? ",
+                      <Text
+                        key="highlight-up"
+                        style={[styles.switchHighlight, { color: palette.tint }]}
+                      >
+                        Sign up
+                      </Text>,
+                    ]
+                  : [
+                      "Already have an account? ",
+                      <Text
+                        key="highlight-in"
+                        style={[styles.switchHighlight, { color: palette.tint }]}
+                      >
+                        Sign in
+                      </Text>,
+                    ]}
+              </Text>
+            </Pressable>
+          </View>
+        </View>
       </KeyboardAvoidingView>
     </ThemedView>
   );
@@ -162,12 +191,25 @@ const styles = StyleSheet.create({
   flex: {
     flex: 1,
   },
-  title: {
-    marginBottom: 8,
+  layout: {
+    flex: 1,
+    justifyContent: "space-between",
   },
-  subtitle: {
-    marginBottom: 28,
-    opacity: 0.85,
+  centerBlock: {
+    flex: 1,
+    justifyContent: "center",
+    alignSelf: "stretch",
+    width: "100%",
+  },
+  bottomArea: {
+    alignSelf: "stretch",
+    width: "100%",
+  },
+  title: {
+    textAlign: "center",
+    lineHeight: 44,
+    marginBottom: 36,
+    paddingBottom: 4,
   },
   input: {
     borderWidth: 1,
@@ -180,6 +222,7 @@ const styles = StyleSheet.create({
   message: {
     marginBottom: 12,
     opacity: 0.9,
+    textAlign: "center",
   },
   primaryButton: {
     borderRadius: 10,
@@ -194,7 +237,19 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   switchRow: {
-    marginTop: 20,
     alignItems: "center",
+    alignSelf: "stretch",
+    paddingVertical: 12,
+  },
+  switchPlain: {
+    width: "100%",
+    fontSize: 16,
+    lineHeight: 22,
+    textAlign: "center",
+  },
+  switchHighlight: {
+    fontSize: 16,
+    lineHeight: 22,
+    fontWeight: "700",
   },
 });
