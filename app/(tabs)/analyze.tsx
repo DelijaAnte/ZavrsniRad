@@ -28,6 +28,7 @@ const PROGRESSION_VIEWS: { key: ProgressionDetailView; label: string }[] = [
 export default function AnalyzeScreen() {
   const colorScheme = useColorScheme() ?? "light";
   const palette = Colors[colorScheme];
+  const isDark = colorScheme === "dark";
   const { routines, workoutHistory, loading } = useRoutines();
   const [progressionDetailView, setProgressionDetailView] =
     useState<ProgressionDetailView>("table");
@@ -108,9 +109,17 @@ export default function AnalyzeScreen() {
                   accessibilityState={{ selected: active }}
                   style={[
                     styles.chip,
-                    active && {
-                      backgroundColor: palette.tintMuted,
-                      borderColor: palette.tintBorder,
+                    {
+                      borderColor: active
+                        ? palette.tintBorder
+                        : isDark
+                          ? "#2f3638"
+                          : "#ddd",
+                      backgroundColor: active
+                        ? palette.tintMuted
+                        : isDark
+                          ? "#1e2224"
+                          : "#fff",
                     },
                   ]}
                   onPress={() => setProgressionDetailView(key)}
@@ -119,12 +128,14 @@ export default function AnalyzeScreen() {
                   <Text
                     style={[
                       styles.chipText,
-                      active && {
-                        color:
-                          colorScheme === "light"
-                            ? tintColorLight
-                            : palette.tint,
-                      },
+                      active
+                        ? {
+                            color:
+                              colorScheme === "light"
+                                ? tintColorLight
+                                : palette.tint,
+                          }
+                        : { color: isDark ? palette.text : "#0c2f35" },
                     ]}
                   >
                     {label}
@@ -153,7 +164,16 @@ export default function AnalyzeScreen() {
                     detailView={progressionDetailView}
                   />
                 ) : (
-                  <ThemedView key={exercise} style={styles.placeholderCard}>
+                  <ThemedView
+                    key={exercise}
+                    style={[
+                      styles.placeholderCard,
+                      {
+                        backgroundColor: isDark ? "#1e2224" : "#fafafa",
+                        borderColor: isDark ? "#2f3638" : "#eee",
+                      },
+                    ]}
+                  >
                     <ThemedText type="defaultSemiBold">{exercise}</ThemedText>
                     <ThemedText style={styles.muted}>
                       No saved sessions for this routine and day.
@@ -197,11 +217,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: "#ddd",
-    backgroundColor: "white",
   },
   chipText: {
-    color: "#0c2f35",
     fontWeight: "600",
     fontSize: 14,
   },
@@ -216,12 +233,10 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#eee",
-    backgroundColor: "#fafafa",
     gap: 6,
   },
   muted: {
-    color: "#666",
     fontSize: 14,
+    opacity: 0.85,
   },
 });

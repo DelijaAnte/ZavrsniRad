@@ -4,7 +4,8 @@ import { StyleSheet, Text, View } from "react-native";
 import { ExerciseProgressCharts } from "@/components/analyze/exercise-progress-charts";
 import type { ExerciseProgression } from "@/components/analyze/progression";
 import { ThemedText } from "@/components/themed-text";
-import { tintColorLight } from "@/constants/theme";
+import { Colors, tintColorLight } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 
 function formatKg(value: number): string {
   return Number.isInteger(value) ? `${value}` : value.toFixed(1);
@@ -32,9 +33,13 @@ function formatDelta(n: number | null, isKg: boolean): string {
   return `${sign}${isKg ? formatKg(mag) : Math.round(mag)}`;
 }
 
-function deltaColor(delta: number | null, needsMoreSessions: boolean): string {
-  if (needsMoreSessions) return "#666";
-  if (delta == null) return "#666";
+function deltaColor(
+  delta: number | null,
+  needsMoreSessions: boolean,
+  neutralColor: string
+): string {
+  if (needsMoreSessions) return neutralColor;
+  if (delta == null) return neutralColor;
   if (delta > 0) return "#1a6b4a";
   if (delta < 0) return "#8b2c2c";
   return tintColorLight;
@@ -50,49 +55,77 @@ export function ExerciseProgressCard({
   progression: ExerciseProgression;
   detailView: ExerciseProgressCardView;
 }) {
+  const colorScheme = useColorScheme() ?? "light";
+  const palette = Colors[colorScheme];
+  const isDark = colorScheme === "dark";
+  const cardBg = isDark ? "#1e2224" : "#fff";
+  const cardBorder = isDark ? "#2f3638" : "#eee";
+  const tableBorder = isDark ? "#2f3638" : "#e8e8e8";
+  const rowBorder = isDark ? "#2f3638" : "#eee";
+  const rowAltBg = isDark ? "#151718" : "#fafafa";
+  const summaryDivider = isDark ? "#2f3638" : "#f0f0f0";
+
   const needsMoreSessions = progression.sessionsUsed < 2;
 
   const weightDeltaColor = useMemo(
-    () => deltaColor(progression.weightDelta, needsMoreSessions),
-    [progression.weightDelta, needsMoreSessions]
+    () =>
+      deltaColor(progression.weightDelta, needsMoreSessions, palette.icon),
+    [progression.weightDelta, needsMoreSessions, palette.icon]
   );
   const repsDeltaColor = useMemo(
-    () => deltaColor(progression.repsDelta, needsMoreSessions),
-    [progression.repsDelta, needsMoreSessions]
+    () => deltaColor(progression.repsDelta, needsMoreSessions, palette.icon),
+    [progression.repsDelta, needsMoreSessions, palette.icon]
   );
 
   return (
-    <View style={styles.card}>
+    <View
+      style={[
+        styles.card,
+        { backgroundColor: cardBg, borderColor: cardBorder },
+      ]}
+    >
       <ThemedText type="defaultSemiBold">{progression.exercise}</ThemedText>
-      <Text style={styles.unitHint}>
+      <Text style={[styles.unitHint, { color: palette.icon }]}>
         Best weight & best reps per saved session on this day
       </Text>
 
       {detailView === "table" ? (
-        <View style={styles.sessionList}>
-          <View style={styles.sessionHeaderRow}>
-            <Text style={[styles.sessionHead, styles.colDate]}>Date</Text>
-            <Text style={[styles.sessionHead, styles.colKg]}>kg</Text>
-            <Text style={[styles.sessionHead, styles.colReps]}>reps</Text>
+        <View style={[styles.sessionList, { borderColor: tableBorder }]}>
+          <View
+            style={[
+              styles.sessionHeaderRow,
+              { backgroundColor: palette.tintMuted },
+            ]}
+          >
+            <Text style={[styles.sessionHead, styles.colDate, { color: palette.icon }]}>
+              Date
+            </Text>
+            <Text style={[styles.sessionHead, styles.colKg, { color: palette.icon }]}>
+              kg
+            </Text>
+            <Text style={[styles.sessionHead, styles.colReps, { color: palette.icon }]}>
+              reps
+            </Text>
           </View>
           {progression.rows.map((row, idx) => (
             <View
               key={`${row.at}-${idx}`}
               style={[
                 styles.sessionRow,
-                idx % 2 === 1 && styles.sessionRowAlt,
+                { borderTopColor: rowBorder },
+                idx % 2 === 1 && { backgroundColor: rowAltBg },
               ]}
             >
               <Text
-                style={[styles.sessionCell, styles.colDate]}
+                style={[styles.sessionCell, styles.colDate, { color: palette.text }]}
                 numberOfLines={1}
               >
                 {formatShortDate(row.at)}
               </Text>
-              <Text style={[styles.sessionCell, styles.colKg]}>
+              <Text style={[styles.sessionCell, styles.colKg, { color: palette.text }]}>
                 {formatDashNumber(row.kg, true)}
               </Text>
-              <Text style={[styles.sessionCell, styles.colReps]}>
+              <Text style={[styles.sessionCell, styles.colReps, { color: palette.text }]}>
                 {formatDashNumber(row.reps, false)}
               </Text>
             </View>
@@ -102,15 +135,17 @@ export function ExerciseProgressCard({
         <ExerciseProgressCharts progression={progression} />
       )}
 
-      <View style={styles.summary}>
+      <View style={[styles.summary, { borderTopColor: summaryDivider }]}>
         <ThemedText type="defaultSemiBold" style={styles.summaryTitle}>
           First → latest
         </ThemedText>
 
         <View style={styles.metricBlock}>
-          <Text style={styles.metricLabel}>Weight (kg)</Text>
+          <Text style={[styles.metricLabel, { color: palette.icon }]}>
+            Weight (kg)
+          </Text>
           <View style={styles.metricValues}>
-            <Text style={styles.metricMain}>
+            <Text style={[styles.metricMain, { color: palette.text }]}>
               {formatDashNumber(progression.weightFirst, true)} →{" "}
               {formatDashNumber(progression.weightLast, true)}
             </Text>
@@ -126,9 +161,11 @@ export function ExerciseProgressCard({
         </View>
 
         <View style={styles.metricBlock}>
-          <Text style={styles.metricLabel}>Reps (best set)</Text>
+          <Text style={[styles.metricLabel, { color: palette.icon }]}>
+            Reps (best set)
+          </Text>
           <View style={styles.metricValues}>
-            <Text style={styles.metricMain}>
+            <Text style={[styles.metricMain, { color: palette.text }]}>
               {formatDashNumber(progression.repsFirst, false)} →{" "}
               {formatDashNumber(progression.repsLast, false)}
             </Text>
@@ -165,26 +202,21 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#eee",
-    backgroundColor: "white",
     gap: 8,
   },
   unitHint: {
     fontSize: 12,
-    color: "#666",
     marginTop: 2,
   },
   sessionList: {
     marginTop: 6,
     borderWidth: 1,
-    borderColor: "#e8e8e8",
     borderRadius: 8,
     overflow: "hidden",
   },
   sessionHeaderRow: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#e8f4f7",
     paddingVertical: 8,
     paddingHorizontal: 10,
     gap: 0,
@@ -195,19 +227,13 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 10,
     borderTopWidth: 1,
-    borderTopColor: "#eee",
-  },
-  sessionRowAlt: {
-    backgroundColor: "#fafafa",
   },
   sessionCell: {
     fontSize: 13,
-    color: "#0c2f35",
   },
   sessionHead: {
     fontWeight: "700",
     fontSize: 12,
-    color: "#444",
   },
   /** Same flex + widths on header and body so columns line up. */
   colDate: {
@@ -231,7 +257,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     paddingTop: 10,
     borderTopWidth: 1,
-    borderTopColor: "#f0f0f0",
     gap: 10,
   },
   summaryTitle: {
@@ -243,7 +268,6 @@ const styles = StyleSheet.create({
   metricLabel: {
     fontSize: 12,
     fontWeight: "600",
-    color: "#666",
   },
   metricValues: {
     flexDirection: "row",
@@ -255,7 +279,6 @@ const styles = StyleSheet.create({
   metricMain: {
     fontSize: 17,
     fontWeight: "800",
-    color: "#0c2f35",
     flex: 1,
     minWidth: 120,
   },
@@ -266,7 +289,7 @@ const styles = StyleSheet.create({
   },
   hint: {
     fontSize: 12,
-    color: "#666",
     marginTop: 2,
+    opacity: 0.9,
   },
 });

@@ -28,8 +28,11 @@ export function RoutineCard({
     );
   }, [routine.days, routine.exercisesByDay]);
 
+  const cardBorder = colorScheme === "dark" ? "#2f3638" : "#eee";
+  const dividerBorder = colorScheme === "dark" ? "#2f3638" : "#f0f0f0";
+
   return (
-    <View style={styles.routineCard}>
+    <View style={[styles.routineCard, { borderColor: cardBorder }]}>
       <TouchableOpacity
         style={styles.headerPress}
         onPress={onToggleExpand}
@@ -47,7 +50,7 @@ export function RoutineCard({
         <>
           <View style={styles.routineBody}>
             <ThemedText type="defaultSemiBold">Days</ThemedText>
-            <Text>{routine.days.join(", ") || "None"}</Text>
+            <ThemedText>{routine.days.join(", ") || "None"}</ThemedText>
 
             <ThemedText type="defaultSemiBold">Exercises</ThemedText>
             {routine.days.length ? (
@@ -55,23 +58,25 @@ export function RoutineCard({
                 const list = routine.exercisesByDay[day] ?? [];
                 return (
                   <View key={day} style={{ gap: 4 }}>
-                    <Text style={styles.dayHeader}>{day}</Text>
+                    <ThemedText style={styles.dayHeader}>{day}</ThemedText>
                     {list.length ? (
                       list.map((ex, idx) => (
-                        <Text key={`${day}-${idx}-${ex}`}>• {ex}</Text>
+                        <ThemedText key={`${day}-${idx}-${ex}`}>
+                          • {ex}
+                        </ThemedText>
                       ))
                     ) : (
-                      <Text>• (no exercises)</Text>
+                      <ThemedText>• (no exercises)</ThemedText>
                     )}
                   </View>
                 );
               })
             ) : (
-              <Text>None</Text>
+              <ThemedText>None</ThemedText>
             )}
           </View>
 
-          <View style={styles.actions}>
+          <View style={[styles.actions, { borderTopColor: dividerBorder }]}>
             <TouchableOpacity
               style={[
                 styles.actionSecondary,
@@ -118,7 +123,6 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#eee",
     marginBottom: 8,
   },
   headerPress: {
@@ -135,7 +139,6 @@ const styles = StyleSheet.create({
   },
   dayHeader: {
     fontWeight: "700",
-    color: "#0c2f35",
   },
   actions: {
     flexDirection: "row",
@@ -144,7 +147,6 @@ const styles = StyleSheet.create({
     marginTop: 14,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: "#f0f0f0",
   },
   actionSecondary: {
     paddingVertical: 10,

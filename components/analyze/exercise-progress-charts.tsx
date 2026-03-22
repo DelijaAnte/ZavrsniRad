@@ -5,6 +5,7 @@ import LineChart from "react-native-chart-kit/dist/line-chart";
 import type { ExerciseProgression } from "@/components/analyze/progression";
 import { ThemedText } from "@/components/themed-text";
 import { Colors, tintColorLight } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import { hexToRgba } from "@/utils/hex-to-rgba";
 
 function formatShortDate(iso: string): string {
@@ -16,16 +17,18 @@ function formatShortDate(iso: string): string {
   });
 }
 
-/** Charts sit on the white progress card — always use light palette for contrast. */
-const chartSurface = Colors.light.background;
-const chartLabel = Colors.light.text;
-const chartGrid = Colors.light.icon;
-
 export function ExerciseProgressCharts({
   progression,
 }: {
   progression: ExerciseProgression;
 }) {
+  const colorScheme = useColorScheme() ?? "light";
+  const palette = Colors[colorScheme];
+  const chartSurface =
+    colorScheme === "dark" ? "#151718" : Colors.light.background;
+  const chartLabel = palette.text;
+  const chartGrid = palette.icon;
+
   const { width: windowWidth } = useWindowDimensions();
   const chartWidth = Math.max(220, windowWidth - 32 * 2 - 12 * 2);
 
@@ -44,7 +47,7 @@ export function ExerciseProgressCharts({
         stroke: hexToRgba(chartGrid, 0.2),
       },
     }),
-    []
+    [chartSurface, chartLabel, chartGrid]
   );
 
   const weightSeries = useMemo(() => {
@@ -135,7 +138,6 @@ const styles = StyleSheet.create({
   caption: {
     fontSize: 12,
     fontWeight: "600",
-    color: "#444",
   },
   chart: {
     marginVertical: 4,
@@ -144,6 +146,5 @@ const styles = StyleSheet.create({
   },
   muted: {
     fontSize: 13,
-    color: "#666",
   },
 });

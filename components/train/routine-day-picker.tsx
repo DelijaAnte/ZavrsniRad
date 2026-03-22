@@ -24,6 +24,7 @@ export function RoutineDayPicker({
 }: Props) {
   const colorScheme = useColorScheme() ?? "light";
   const palette = Colors[colorScheme];
+  const isDark = colorScheme === "dark";
   const selectedRoutine = routines.find((r) => r.id === selectedRoutineId) ?? null;
   const availableDays = selectedRoutine?.days ?? [];
 
@@ -41,9 +42,17 @@ export function RoutineDayPicker({
                   onPress={() => onSelectRoutine(r.id)}
                   style={[
                     styles.chip,
-                    active && {
-                      backgroundColor: palette.tintMuted,
-                      borderColor: palette.tintBorder,
+                    {
+                      borderColor: active
+                        ? palette.tintBorder
+                        : isDark
+                          ? "#2f3638"
+                          : "#ddd",
+                      backgroundColor: active
+                        ? palette.tintMuted
+                        : isDark
+                          ? "#1e2224"
+                          : "#fff",
                     },
                   ]}
                   activeOpacity={0.85}
@@ -51,10 +60,14 @@ export function RoutineDayPicker({
                   <Text
                     style={[
                       styles.chipText,
-                      active && {
-                        color:
-                          colorScheme === "light" ? tintColorLight : palette.tint,
-                      },
+                      active
+                        ? {
+                            color:
+                              colorScheme === "light"
+                                ? tintColorLight
+                                : palette.tint,
+                          }
+                        : { color: isDark ? palette.text : "#0c2f35" },
                     ]}
                   >
                     {r.name}
@@ -64,7 +77,15 @@ export function RoutineDayPicker({
             })}
           </View>
         ) : (
-          <ThemedView style={styles.emptyState}>
+          <ThemedView
+            style={[
+              styles.emptyState,
+              {
+                borderColor: isDark ? "#2f3638" : "#eee",
+                backgroundColor: isDark ? "#1e2224" : undefined,
+              },
+            ]}
+          >
             <ThemedText type="defaultSemiBold">No routines yet</ThemedText>
             <ThemedText>Create a routine in the Plan tab first.</ThemedText>
           </ThemedView>
@@ -84,9 +105,17 @@ export function RoutineDayPicker({
                     onPress={() => onSelectDay(d)}
                     style={[
                       styles.chip,
-                      active && {
-                        backgroundColor: palette.tintMuted,
-                        borderColor: palette.tintBorder,
+                      {
+                        borderColor: active
+                          ? palette.tintBorder
+                          : isDark
+                            ? "#2f3638"
+                            : "#ddd",
+                        backgroundColor: active
+                          ? palette.tintMuted
+                          : isDark
+                            ? "#1e2224"
+                            : "#fff",
                       },
                     ]}
                     activeOpacity={0.85}
@@ -94,12 +123,14 @@ export function RoutineDayPicker({
                     <Text
                       style={[
                         styles.chipText,
-                        active && {
-                          color:
-                            colorScheme === "light"
-                              ? tintColorLight
-                              : palette.tint,
-                        },
+                        active
+                          ? {
+                              color:
+                                colorScheme === "light"
+                                  ? tintColorLight
+                                  : palette.tint,
+                            }
+                          : { color: isDark ? palette.text : "#0c2f35" },
                       ]}
                     >
                       {d}
@@ -125,7 +156,6 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#eee",
     gap: 6,
   },
   chipsRow: {
@@ -139,11 +169,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: "#ddd",
-    backgroundColor: "white",
   },
   chipText: {
-    color: "#0c2f35",
     fontWeight: "600",
   },
 });

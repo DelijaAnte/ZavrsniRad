@@ -12,6 +12,7 @@ import Svg, { G, Rect, Text as SvgText } from "react-native-svg";
 import { ThemedText } from "@/components/themed-text";
 import type { Day, WorkoutSession } from "@/components/routines/types";
 import { Colors, tintColorLight } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import { hexToRgba } from "@/utils/hex-to-rgba";
 
 function startOfLocalDay(d: Date): Date {
@@ -65,8 +66,6 @@ function listMonthsBetween(
   return out;
 }
 
-const chartSurface = Colors.light.background;
-
 export function TrainingConsistencyHeatmap({
   sessions,
   routineId,
@@ -78,6 +77,13 @@ export function TrainingConsistencyHeatmap({
   routineName: string;
   templateDay: Day;
 }) {
+  const colorScheme = useColorScheme() ?? "light";
+  const palette = Colors[colorScheme];
+  const isDark = colorScheme === "dark";
+  const chartSurface = isDark ? "#1e2224" : Colors.light.background;
+  const cardBg = isDark ? "#1e2224" : "#fff";
+  const cardBorder = isDark ? "#2f3638" : "#eee";
+
   const { width: windowWidth } = useWindowDimensions();
   const squareSize = 28;
   const gutter = 6;
@@ -193,7 +199,7 @@ export function TrainingConsistencyHeatmap({
           cy,
           dayNum: null,
           fill: "transparent",
-          labelFill: Colors.light.text,
+          labelFill: palette.text,
         });
         continue;
       }
@@ -207,7 +213,7 @@ export function TrainingConsistencyHeatmap({
       }
       const fill =
         c > 0 ? `rgba(${baseRgb},${Math.min(1, intensity)})` : emptyFill;
-      const labelFill = c > 0 && intensity > 0.52 ? "#fff" : Colors.light.text;
+      const labelFill = c > 0 && intensity > 0.52 ? "#fff" : palette.text;
       out.push({ cx, cy, dayNum, fill, labelFill });
     }
 
@@ -218,14 +224,23 @@ export function TrainingConsistencyHeatmap({
       svgWidth: w,
       svgHeight: h,
     };
-  }, [selected, countsByDay, squareSize, gutter, cell, padX, graphTopPad]);
+  }, [
+    selected,
+    countsByDay,
+    squareSize,
+    gutter,
+    cell,
+    padX,
+    graphTopPad,
+    palette.text,
+  ]);
 
   const chartConfig = useMemo(
     () => ({
       backgroundGradientFrom: chartSurface,
       backgroundGradientTo: chartSurface,
     }),
-    []
+    [chartSurface]
   );
 
   const distinctDaysWithTraining = countsByDay.size;
@@ -233,7 +248,7 @@ export function TrainingConsistencyHeatmap({
   const needsScroll = svgWidth > windowWidth - 48;
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, { backgroundColor: cardBg, borderColor: cardBorder }]}>
       <ThemedText type="defaultSemiBold">{routineName}</ThemedText>
 
       {distinctDaysWithTraining === 0 ? (
@@ -255,14 +270,35 @@ export function TrainingConsistencyHeatmap({
                       key={m.key}
                       accessibilityRole="button"
                       accessibilityState={{ selected: active }}
-                      style={[styles.monthChip, active && styles.monthChipActive]}
+                      style={[
+                        styles.monthChip,
+                        {
+                          borderColor: active
+                            ? palette.tintBorder
+                            : isDark
+                              ? "#3a4044"
+                              : "#ddd",
+                          backgroundColor: active
+                            ? palette.tintMuted
+                            : isDark
+                              ? "#151718"
+                              : "#fff",
+                        },
+                      ]}
                       onPress={() => setSelectedMonthKey(m.key)}
                       activeOpacity={0.85}
                     >
                       <Text
                         style={[
                           styles.monthChipText,
-                          active && styles.monthChipTextActive,
+                          active
+                            ? {
+                                color:
+                                  colorScheme === "light"
+                                    ? tintColorLight
+                                    : palette.tint,
+                              }
+                            : { color: isDark ? palette.text : "#0c2f35" },
                         ]}
                         numberOfLines={1}
                       >
@@ -291,7 +327,8 @@ export function TrainingConsistencyHeatmap({
                     cells,
                     selected,
                     chartConfig,
-                    availableMonths.length <= 1
+                    availableMonths.length <= 1,
+                    palette.text
                   )}
                 </View>
               </ScrollView>
@@ -306,7 +343,8 @@ export function TrainingConsistencyHeatmap({
                     cells,
                     selected,
                     chartConfig,
-                    availableMonths.length <= 1
+                    availableMonths.length <= 1,
+                    palette.text
                   )}
                 </View>
               </View>
@@ -332,7 +370,8 @@ function renderHeatmapSvg(
   }[],
   selected: { label: string } | undefined,
   chartConfig: { backgroundGradientFrom: string },
-  showMonthTitle: boolean
+  showMonthTitle: boolean,
+  monthTitleColor: string
 ) {
   return (
     <Svg width={svgW} height={svgH}>
@@ -349,7 +388,7 @@ function renderHeatmapSvg(
           y={16}
           fontSize={13}
           fontWeight="600"
-          fill={Colors.light.text}
+          fill={monthTitleColor}
         >
           {selected.label}
         </SvgText>
@@ -396,8 +435,6 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#eee",
-    backgroundColor: "#fff",
     gap: 10,
   },
   monthPickerTitle: {
@@ -415,21 +452,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: "#ddd",
-    backgroundColor: "#fff",
     maxWidth: "100%",
-  },
-  monthChipActive: {
-    backgroundColor: Colors.light.tintMuted,
-    borderColor: Colors.light.tintBorder,
   },
   monthChipText: {
     fontSize: 13,
     fontWeight: "600",
-    color: "#0c2f35",
-  },
-  monthChipTextActive: {
-    color: tintColorLight,
   },
   graphWrap: {
     marginTop: 4,
@@ -448,6 +475,5 @@ const styles = StyleSheet.create({
   },
   muted: {
     fontSize: 14,
-    color: "#666",
   },
 });

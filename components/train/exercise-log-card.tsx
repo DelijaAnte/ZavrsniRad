@@ -9,7 +9,8 @@ import {
 
 import type { SetEntry } from "@/components/train/types";
 import { ThemedText } from "@/components/themed-text";
-import { tintColorLight } from "@/constants/theme";
+import { Colors, tintColorLight } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 
 type Props = {
   exercise: string;
@@ -28,46 +29,119 @@ export function ExerciseLogCard({
   onRemoveSet,
   onUpdateSet,
 }: Props) {
+  const colorScheme = useColorScheme() ?? "light";
+  const palette = Colors[colorScheme];
+  const isDark = colorScheme === "dark";
+  const cardBg = isDark ? "#1e2224" : "#fff";
+  const cardBorder = isDark ? "#2f3638" : "#eee";
+  const inputBg = isDark ? "#151718" : "#fafafa";
+  const inputBorder = isDark ? "#3a4044" : "#ddd";
+  const mutedLabel = palette.icon;
+  const removeBtnBg = isDark ? "#1e2224" : "#fff";
+  const removeBtnBorder = isDark ? "#2f3638" : "#eee";
+
   return (
-    <View style={styles.card} onLayout={onLayout}>
+    <View
+      style={[styles.card, { backgroundColor: cardBg, borderColor: cardBorder }]}
+      onLayout={onLayout}
+    >
       <ThemedText type="defaultSemiBold">{exercise}</ThemedText>
 
       {sets.length ? (
         <View style={styles.setsList}>
           <View style={styles.setRow}>
             <Text style={[styles.setIndex, styles.headerLabel]}></Text>
-            <Text style={[styles.columnHeader, styles.columnWeight]}>kg</Text>
-            <Text style={[styles.columnHeader, styles.columnReps]}>Reps</Text>
-            <Text style={[styles.columnHeader, styles.columnRpe]}>RPE</Text>
+            <Text
+              style={[
+                styles.columnHeader,
+                styles.columnWeight,
+                { color: mutedLabel },
+              ]}
+            >
+              kg
+            </Text>
+            <Text
+              style={[
+                styles.columnHeader,
+                styles.columnReps,
+                { color: mutedLabel },
+              ]}
+            >
+              Reps
+            </Text>
+            <Text
+              style={[
+                styles.columnHeader,
+                styles.columnRpe,
+                { color: mutedLabel },
+              ]}
+            >
+              RPE
+            </Text>
             <View style={styles.removeButtonPlaceholder} />
           </View>
           {sets.map((s, idx) => (
             <View key={`${exercise}-${idx}`} style={styles.setRow}>
-              <Text style={styles.setIndex}>{idx + 1}</Text>
+              <Text style={[styles.setIndex, { color: palette.text }]}>
+                {idx + 1}
+              </Text>
               <TextInput
                 placeholder="—"
+                placeholderTextColor={mutedLabel}
                 keyboardType="decimal-pad"
                 value={s.weight}
                 onChangeText={(v) => onUpdateSet(idx, { weight: v })}
-                style={[styles.input, styles.inputWeight]}
+                style={[
+                  styles.input,
+                  styles.inputWeight,
+                  {
+                    color: palette.text,
+                    backgroundColor: inputBg,
+                    borderColor: inputBorder,
+                  },
+                ]}
               />
               <TextInput
                 placeholder="—"
+                placeholderTextColor={mutedLabel}
                 keyboardType="number-pad"
                 value={s.reps}
                 onChangeText={(v) => onUpdateSet(idx, { reps: v })}
-                style={[styles.input, styles.inputReps]}
+                style={[
+                  styles.input,
+                  styles.inputReps,
+                  {
+                    color: palette.text,
+                    backgroundColor: inputBg,
+                    borderColor: inputBorder,
+                  },
+                ]}
               />
               <TextInput
                 placeholder="—"
+                placeholderTextColor={mutedLabel}
                 keyboardType="decimal-pad"
                 value={s.rpe}
                 onChangeText={(v) => onUpdateSet(idx, { rpe: v })}
-                style={[styles.input, styles.inputRpe]}
+                style={[
+                  styles.input,
+                  styles.inputRpe,
+                  {
+                    color: palette.text,
+                    backgroundColor: inputBg,
+                    borderColor: inputBorder,
+                  },
+                ]}
               />
               <TouchableOpacity
                 onPress={() => onRemoveSet(idx)}
-                style={styles.removeButton}
+                style={[
+                  styles.removeButton,
+                  {
+                    backgroundColor: removeBtnBg,
+                    borderColor: removeBtnBorder,
+                  },
+                ]}
                 activeOpacity={0.85}
               >
                 <Text style={styles.removeButtonText}>×</Text>
@@ -97,8 +171,6 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#eee",
-    backgroundColor: "white",
   },
   setsList: {
     gap: 6,
@@ -113,17 +185,14 @@ const styles = StyleSheet.create({
     width: 24,
     textAlign: "center",
     fontWeight: "700",
-    color: "#0c2f35",
     fontSize: 14,
   },
   headerLabel: {
     fontWeight: "600",
-    color: "#666",
   },
   columnHeader: {
     fontSize: 12,
     fontWeight: "600",
-    color: "#666",
     textAlign: "center",
   },
   columnWeight: { flex: 1.2, minWidth: 44 },
@@ -134,11 +203,9 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ddd",
     paddingVertical: 8,
     paddingHorizontal: 6,
     borderRadius: 8,
-    backgroundColor: "#fafafa",
     fontSize: 15,
     textAlign: "center",
   },
@@ -150,10 +217,8 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#eee",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#fff",
   },
   removeButtonText: {
     fontWeight: "700",
