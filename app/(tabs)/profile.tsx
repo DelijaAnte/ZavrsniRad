@@ -1,9 +1,10 @@
 import ParallaxScrollView from "@/components/parallax-scroll-view";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
-import { Colors } from "@/constants/theme";
+import { Colors, tintColorLight } from "@/constants/theme";
 import { useAuth } from "@/context/auth-context";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
@@ -12,31 +13,48 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  useWindowDimensions,
+  View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const GITHUB_REPO_URL = "https://github.com/DelijaAnte/ZavrsniRad";
-
-function displayNameFromUser(user: {
-  user_metadata?: Record<string, unknown>;
-}): string | null {
-  const meta = user.user_metadata;
-  if (!meta) return null;
-  const full = meta.full_name;
-  const name = meta.name;
-  if (typeof full === "string" && full.trim()) return full.trim();
-  if (typeof name === "string" && name.trim()) return name.trim();
-  return null;
-}
 
 export default function ProfileScreen() {
   const { session, initialized, signOut, deleteAccount } = useAuth();
   const colorScheme = useColorScheme() ?? "light";
+  const isLight = colorScheme === "light";
   const tint = Colors[colorScheme].tint;
   const [deletingAccount, setDeletingAccount] = useState(false);
+  const { height: windowHeight } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
 
   const user = session?.user;
   const email = user?.email ?? null;
-  const displayName = user ? displayNameFromUser(user) : null;
+
+  const palette = isLight
+    ? {
+        cardBg: "#f3f4f6",
+        label: "#6b7280",
+        primaryText: "#111827",
+        divider: "#e5e7eb",
+        signOutBorder: "#e5e7eb",
+        deleteBorder: "#fecaca",
+        deleteText: "#dc2626",
+        githubCircle: "#0f172a",
+        pageBg: Colors.light.background,
+      }
+    : {
+        cardBg: Colors.dark.tintMuted,
+        label: "#9ca3af",
+        primaryText: Colors.dark.text,
+        divider: "#374151",
+        signOutBorder: "#4b5563",
+        deleteBorder: "#7f1d1d",
+        deleteText: "#f87171",
+        githubCircle: "#020617",
+        pageBg: Colors.dark.background,
+      };
 
   function confirmDeleteAccount() {
     Alert.alert(
@@ -88,131 +106,214 @@ export default function ProfileScreen() {
         light: Colors.light.parallaxHeader,
         dark: Colors.dark.parallaxHeader,
       }}
+      contentContainerStyle={styles.scrollContent}
+      contentPaddingBottom={insets.bottom}
     >
-      <ThemedView style={styles.header}>
-        <ThemedText type="title">Profile</ThemedText>
-      </ThemedView>
-
-      {!initialized ? (
-        <ThemedView style={styles.loadingRow}>
-          <ActivityIndicator color={tint} />
-          <ThemedText>Loading…</ThemedText>
+      <View style={styles.pageColumn}>
+        <ThemedView style={styles.headerRow}>
+          <View style={styles.headerTitles}>
+            <ThemedText type="title">Profile</ThemedText>
+          </View>
         </ThemedView>
-      ) : (
-        <ThemedView
-          style={[styles.card, { borderColor: Colors[colorScheme].tintBorder }]}
-        >
-          {displayName ? (
-            <>
-              <ThemedText type="defaultSemiBold">{displayName}</ThemedText>
-              {email ? (
-                <ThemedText style={styles.secondary}>{email}</ThemedText>
-              ) : null}
-            </>
-          ) : email ? (
-            <ThemedText type="defaultSemiBold">{email}</ThemedText>
-          ) : (
-            <ThemedText>No account details</ThemedText>
-          )}
-        </ThemedView>
-      )}
 
-      <ThemedView style={styles.actions}>
-        <TouchableOpacity
-          accessibilityRole="button"
-          accessibilityLabel="Open project on GitHub"
-          style={[styles.linkButton, { borderColor: tint }]}
-          onPress={() => void openGitHub()}
-          activeOpacity={0.85}
-        >
-          <Text style={[styles.linkButtonText, { color: tint }]}>Source on GitHub</Text>
-        </TouchableOpacity>
+        {!initialized ? (
+          <View style={styles.loadingFill}>
+            <ActivityIndicator color={tint} />
+            <ThemedText>Loading…</ThemedText>
+          </View>
+        ) : (
+          <View
+            style={[
+              styles.mainFill,
+              { minHeight: Math.max(360, windowHeight * 0.52) },
+            ]}
+          >
+            <View style={styles.topBlock}>
+              <TouchableOpacity
+                style={[styles.infoCard, { backgroundColor: palette.cardBg }]}
+                activeOpacity={email ? 0.85 : 1}
+                disabled={!email}
+                accessibilityRole={email ? "button" : "text"}
+                accessibilityLabel={email ? `Email ${email}` : "No email on file"}
+              >
+                <View
+                  style={[
+                    styles.iconCircle,
+                    { backgroundColor: isLight ? Colors.light.tintMuted : "#1e3a45" },
+                  ]}
+                >
+                  <Ionicons name="mail-outline" size={22} color={tintColorLight} />
+                </View>
+                <View style={styles.infoTextBlock}>
+                  <Text style={[styles.infoLabel, { color: palette.label }]}>Email</Text>
+                  <Text style={[styles.infoValue, { color: palette.primaryText }]}>
+                    {email ?? "Not signed in"}
+                  </Text>
+                </View>
+              </TouchableOpacity>
 
-        <TouchableOpacity
-          accessibilityRole="button"
-          accessibilityLabel="Sign out"
-          style={[styles.signOut, { borderColor: tint }]}
-          onPress={() => void handleSignOut()}
-          activeOpacity={0.85}
-          disabled={deletingAccount}
-        >
-          <Text style={[styles.signOutText, { color: tint }]}>Sign out</Text>
-        </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.infoCard, { backgroundColor: palette.cardBg }]}
+                accessibilityRole="button"
+                accessibilityLabel="View source code on GitHub"
+                onPress={() => void openGitHub()}
+                activeOpacity={0.85}
+              >
+                <View
+                  style={[styles.iconCircle, { backgroundColor: palette.githubCircle }]}
+                >
+                  <Ionicons name="logo-github" size={24} color="#fff" />
+                </View>
+                <View style={styles.infoTextBlock}>
+                  <Text style={[styles.infoLabel, { color: palette.label }]}>
+                    Source Code
+                  </Text>
+                  <Text style={[styles.infoValue, { color: palette.primaryText }]}>
+                    View on GitHub
+                  </Text>
+                </View>
+              </TouchableOpacity>
 
-        <TouchableOpacity
-          accessibilityRole="button"
-          accessibilityLabel="Delete account"
-          style={styles.deleteAccount}
-          onPress={confirmDeleteAccount}
-          activeOpacity={0.85}
-          disabled={deletingAccount || !initialized}
-        >
-          {deletingAccount ? (
-            <ActivityIndicator color="#c0392b" />
-          ) : (
-            <Text style={styles.deleteAccountText}>Delete account</Text>
-          )}
-        </TouchableOpacity>
-      </ThemedView>
+              <View style={[styles.divider, { backgroundColor: palette.divider }]} />
+            </View>
+
+            <View style={styles.bottomBlock}>
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel="Sign out"
+                style={[
+                  styles.actionButton,
+                  {
+                    backgroundColor: palette.pageBg,
+                    borderColor: palette.signOutBorder,
+                  },
+                ]}
+                onPress={() => void handleSignOut()}
+                activeOpacity={0.85}
+                disabled={deletingAccount}
+              >
+                <Ionicons name="log-out-outline" size={22} color={palette.primaryText} />
+                <Text style={[styles.actionButtonTextBold, { color: palette.primaryText }]}>
+                  Sign Out
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel="Delete account"
+                style={[
+                  styles.actionButton,
+                  {
+                    backgroundColor: palette.pageBg,
+                    borderColor: palette.deleteBorder,
+                  },
+                ]}
+                onPress={confirmDeleteAccount}
+                activeOpacity={0.85}
+                disabled={deletingAccount || !initialized}
+              >
+                {deletingAccount ? (
+                  <ActivityIndicator color={palette.deleteText} />
+                ) : (
+                  <>
+                    <Ionicons name="trash-outline" size={22} color={palette.deleteText} />
+                    <Text style={[styles.actionButtonTextBold, { color: palette.deleteText }]}>
+                      Delete Account
+                    </Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+      </View>
     </ParallaxScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
-    gap: 4,
-    marginBottom: 8,
+  scrollContent: {
+    flexGrow: 1,
   },
-  loadingRow: {
+  pageColumn: {
+    flex: 1,
+    gap: 16,
+  },
+  headerRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
-    paddingVertical: 8,
-  },
-  card: {
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#eee",
-    gap: 6,
-    marginBottom: 16,
-  },
-  secondary: {
-    opacity: 0.75,
-  },
-  actions: {
+    justifyContent: "space-between",
     gap: 12,
-    alignItems: "flex-start",
   },
-  linkButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    borderRadius: 10,
-    borderWidth: 1,
+  headerTitles: {
+    flex: 1,
+    gap: 4,
+    minWidth: 0,
   },
-  linkButtonText: {
-    fontSize: 15,
-    fontWeight: "600",
+  loadingFill: {
+    flex: 1,
+    minHeight: 200,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
   },
-  signOut: {
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    borderRadius: 10,
-    borderWidth: 1,
+  mainFill: {
+    flex: 1,
+    justifyContent: "space-between",
   },
-  signOutText: {
-    fontSize: 15,
-    fontWeight: "600",
+  topBlock: {
+    gap: 12,
   },
-  deleteAccount: {
-    paddingVertical: 10,
-    paddingHorizontal: 4,
-    minHeight: 44,
+  bottomBlock: {
+    gap: 12,
+    flexShrink: 0,
+    paddingTop: 8,
+  },
+  infoCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 14,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    gap: 14,
+  },
+  iconCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: "center",
     justifyContent: "center",
   },
-  deleteAccountText: {
-    fontSize: 15,
+  infoTextBlock: {
+    flex: 1,
+    gap: 2,
+  },
+  infoLabel: {
+    fontSize: 13,
+    fontWeight: "500",
+  },
+  infoValue: {
+    fontSize: 16,
     fontWeight: "600",
-    color: "#c0392b",
+  },
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    marginTop: 8,
+    marginBottom: 4,
+    alignSelf: "stretch",
+  },
+  actionButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  actionButtonTextBold: {
+    fontSize: 16,
+    fontWeight: "700",
   },
 });

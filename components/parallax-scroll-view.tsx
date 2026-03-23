@@ -1,4 +1,5 @@
 import type { PropsWithChildren, ReactElement } from "react";
+import type { StyleProp, ViewStyle } from "react-native";
 import { StyleSheet } from "react-native";
 import Animated, {
   interpolate,
@@ -18,12 +19,21 @@ const CONTENT_PADDING = 32;
 type Props = PropsWithChildren<{
   headerImage?: ReactElement | null;
   headerBackgroundColor: { dark: string; light: string };
+  /** Merged into ScrollView `contentContainerStyle` (e.g. `{ flexGrow: 1 }` to fill the viewport). */
+  contentContainerStyle?: StyleProp<ViewStyle>;
+  /**
+   * Override inner content `paddingBottom` (default `32 + safe area`).
+   * Tab screens often need less space above the tab bar.
+   */
+  contentPaddingBottom?: number;
 }>;
 
 export default function ParallaxScrollView({
   children,
   headerImage,
   headerBackgroundColor,
+  contentContainerStyle,
+  contentPaddingBottom,
 }: Props) {
   const backgroundColor = useThemeColor({}, "background");
   const colorScheme = useColorScheme() ?? "light";
@@ -55,6 +65,7 @@ export default function ParallaxScrollView({
     <Animated.ScrollView
       ref={scrollRef}
       style={{ backgroundColor, flex: 1 }}
+      contentContainerStyle={contentContainerStyle}
       scrollEventThrottle={16}
     >
       {headerImage ? (
@@ -73,7 +84,8 @@ export default function ParallaxScrollView({
           styles.content,
           {
             paddingTop: CONTENT_PADDING + insets.top,
-            paddingBottom: CONTENT_PADDING + insets.bottom,
+            paddingBottom:
+              contentPaddingBottom ?? CONTENT_PADDING + insets.bottom,
           },
         ]}
       >
