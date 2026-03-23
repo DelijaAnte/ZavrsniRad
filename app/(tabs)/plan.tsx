@@ -117,29 +117,31 @@ export default function PlanScreen() {
         </ThemedView>
       ) : null}
 
-      <ThemedView style={[styles.section, styles.routineList]}>
-        {routines.length ? (
-          routines.map((item) => (
-            <RoutineCard
-              key={item.id}
-              routine={item}
-              expanded={expandedId === item.id}
-              onToggleExpand={() =>
-                setExpandedId((id) => (id === item.id ? null : item.id))
-              }
-              onEdit={openEditModal}
-              onDelete={confirmDelete}
-            />
-          ))
-        ) : (
-          <ThemedView style={styles.emptyState}>
-            <ThemedText type="defaultSemiBold">No routines yet</ThemedText>
-            <ThemedText>
-              Tap the + button to create your first routine.
-            </ThemedText>
-          </ThemedView>
-        )}
-      </ThemedView>
+      {!loading ? (
+        <ThemedView style={[styles.section, styles.routineList]}>
+          {routines.length ? (
+            routines.map((item) => (
+              <RoutineCard
+                key={item.id}
+                routine={item}
+                expanded={expandedId === item.id}
+                onToggleExpand={() =>
+                  setExpandedId((id) => (id === item.id ? null : item.id))
+                }
+                onEdit={openEditModal}
+                onDelete={confirmDelete}
+              />
+            ))
+          ) : (
+            <ThemedView style={styles.emptyState}>
+              <ThemedText type="defaultSemiBold">No routines yet</ThemedText>
+              <ThemedText>
+                Tap the + button to create your first routine.
+              </ThemedText>
+            </ThemedView>
+          )}
+        </ThemedView>
+      ) : null}
 
       <RoutineModal
         visible={modalVisible}
