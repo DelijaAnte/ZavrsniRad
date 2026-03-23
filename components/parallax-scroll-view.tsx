@@ -26,6 +26,10 @@ type Props = PropsWithChildren<{
    * Tab screens often need less space above the tab bar.
    */
   contentPaddingBottom?: number;
+  /**
+   * When true, ScrollView shrinks its insets when the keyboard is visible (iOS) and keeps taps working on controls while the keyboard is open.
+   */
+  keyboardAware?: boolean;
 }>;
 
 export default function ParallaxScrollView({
@@ -34,6 +38,7 @@ export default function ParallaxScrollView({
   headerBackgroundColor,
   contentContainerStyle,
   contentPaddingBottom,
+  keyboardAware = false,
 }: Props) {
   const backgroundColor = useThemeColor({}, "background");
   const colorScheme = useColorScheme() ?? "light";
@@ -67,6 +72,8 @@ export default function ParallaxScrollView({
       style={{ backgroundColor, flex: 1 }}
       contentContainerStyle={contentContainerStyle}
       scrollEventThrottle={16}
+      keyboardShouldPersistTaps={keyboardAware ? "handled" : undefined}
+      automaticallyAdjustKeyboardInsets={keyboardAware}
     >
       {headerImage ? (
         <Animated.View

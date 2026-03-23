@@ -3,13 +3,13 @@ import {
   Alert,
   Modal,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 
 import { ThemedText } from "@/components/themed-text";
 import type { Day, Routine } from "@/components/routines/types";
@@ -213,7 +213,13 @@ export function RoutineModal({
     >
       <Pressable style={styles.modalOverlay} onPress={close}>
         <Pressable style={styles.modalCard} onPress={() => {}}>
-          <ScrollView keyboardShouldPersistTaps="handled">
+          <KeyboardAwareScrollView
+            keyboardShouldPersistTaps="handled"
+            bottomOffset={20}
+            extraKeyboardSpace={16}
+            showsVerticalScrollIndicator
+            contentContainerStyle={styles.modalScrollContent}
+          >
             <ThemedText type="subtitle" style={{ marginBottom: 8 }}>
               {mode === "edit" ? "Edit routine" : "New routine"}
             </ThemedText>
@@ -401,7 +407,7 @@ export function RoutineModal({
                 </Text>
               </TouchableOpacity>
             </View>
-          </ScrollView>
+          </KeyboardAwareScrollView>
         </Pressable>
       </Pressable>
     </Modal>
@@ -417,9 +423,13 @@ const styles = StyleSheet.create({
   },
   modalCard: {
     maxHeight: "90%",
+    width: "100%",
     borderRadius: 12,
     padding: 16,
     backgroundColor: "white",
+  },
+  modalScrollContent: {
+    paddingBottom: 8,
   },
   iconButton: {
     width: 36,

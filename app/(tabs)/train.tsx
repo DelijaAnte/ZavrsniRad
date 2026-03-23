@@ -1,7 +1,14 @@
 import React, { useMemo, useState } from "react";
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import ParallaxScrollView from "@/components/parallax-scroll-view";
 import { useRoutines } from "@/components/routines/routines-store";
 import type { Day, Routine } from "@/components/routines/types";
 import {
@@ -11,9 +18,15 @@ import {
 } from "@/components/train";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
-import { Colors, tintColorLight } from "@/constants/theme";
+import { tintColorLight } from "@/constants/theme";
+import { useThemeColor } from "@/hooks/use-theme-color";
+
+/** Match `ParallaxScrollView` content padding so Train looks consistent with other tabs. */
+const CONTENT_PADDING = 32;
 
 export default function TrainScreen() {
+  const insets = useSafeAreaInsets();
+  const backgroundColor = useThemeColor({}, "background");
   const { routines, saveWorkoutSession, loading, saving } = useRoutines();
   const { log, reset, ensureExercise, addSet, removeSet, updateSet } =
     useTrainLog();
@@ -56,11 +69,20 @@ export default function TrainScreen() {
   }
 
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{
-        light: Colors.light.parallaxHeader,
-        dark: Colors.dark.parallaxHeader,
-      }}
+    <KeyboardAwareScrollView
+      style={[styles.flex, { backgroundColor }]}
+      keyboardShouldPersistTaps="handled"
+      bottomOffset={20}
+      extraKeyboardSpace={12}
+      showsVerticalScrollIndicator
+      contentContainerStyle={[
+        styles.scrollInner,
+        {
+          paddingTop: CONTENT_PADDING + insets.top,
+          paddingBottom: CONTENT_PADDING + insets.bottom + 32,
+          paddingHorizontal: CONTENT_PADDING,
+        },
+      ]}
     >
       <ThemedView style={styles.headerRow}>
         <View style={styles.headerTitles}>
@@ -89,7 +111,9 @@ export default function TrainScreen() {
                   onLayout={() => ensureExercise(exercise)}
                   onAddSet={() => addSet(exercise)}
                   onRemoveSet={(idx) => removeSet(exercise, idx)}
-                  onUpdateSet={(idx, patch) => updateSet(exercise, idx, patch)}
+                  onUpdateSet={(idx, patch) =>
+                    updateSet(exercise, idx, patch)
+                  }
                 />
               ))}
             </View>
@@ -115,11 +139,17 @@ export default function TrainScreen() {
           </TouchableOpacity>
         </ThemedView>
       ) : null}
-    </ParallaxScrollView>
+    </KeyboardAwareScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  flex: {
+    flex: 1,
+  },
+  scrollInner: {
+    gap: 16,
+  },
   headerRow: {
     flexDirection: "row",
     alignItems: "center",

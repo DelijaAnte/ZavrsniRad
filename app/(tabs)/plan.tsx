@@ -21,8 +21,15 @@ export default function PlanScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
   const [routineToEdit, setRoutineToEdit] = useState<Routine | null>(null);
-  const { routines, addRoutine, updateRoutine, deleteRoutine, loading, saving, error } =
-    useRoutines();
+  const {
+    routines,
+    addRoutine,
+    updateRoutine,
+    deleteRoutine,
+    loading,
+    saving,
+    error,
+  } = useRoutines();
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   function openCreateModal() {
@@ -107,7 +114,7 @@ export default function PlanScreen() {
       {loading ? (
         <ThemedView style={styles.loadingRow}>
           <ActivityIndicator color={tintColorLight} />
-          <ThemedText>Loading your program…</ThemedText>
+          <ThemedText>Loading your plans…</ThemedText>
         </ThemedView>
       ) : null}
 
