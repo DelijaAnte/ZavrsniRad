@@ -3,11 +3,13 @@ import {
   Alert,
   Modal,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
+  useWindowDimensions,
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 
@@ -129,6 +131,14 @@ export function RoutineModal({
     return name.trim().length > 0 && selectedDays.length > 0;
   }, [name, selectedDays.length]);
 
+  const { height: windowHeight } = useWindowDimensions();
+  /** Fixed sheet height so ScrollView has a real viewport (content can extend and scroll). */
+  const modalSheetHeight = useMemo(() => {
+    const overlayVerticalPadding = 40; // styles.modalOverlay padding * 2
+    const inner = Math.max(0, windowHeight - overlayVerticalPadding);
+    return Math.max(280, Math.round(inner * 0.9));
+  }, [windowHeight]);
+
   const wasVisibleRef = useRef(false);
 
   useEffect(() => {
@@ -211,14 +221,33 @@ export function RoutineModal({
       transparent
       onRequestClose={close}
     >
-      <Pressable style={styles.modalOverlay} onPress={close}>
-        <Pressable style={styles.modalCard} onPress={() => {}}>
+      {/*
+        Backdrop must NOT wrap the sheet: a parent Pressable breaks ScrollView pan gestures.
+        Dismiss by tapping the dimmed area only (sibling Pressable behind the card).
+      */}
+      <View style={styles.modalOverlay}>
+        <Pressable
+          style={styles.modalBackdrop}
+          onPress={close}
+          accessibilityLabel="Dismiss"
+          accessibilityRole="button"
+        />
+        <View
+          style={[styles.modalCard, { height: modalSheetHeight }]}
+          collapsable={false}
+        >
           <KeyboardAwareScrollView
-            keyboardShouldPersistTaps="handled"
-            bottomOffset={20}
-            extraKeyboardSpace={16}
-            showsVerticalScrollIndicator
+            ScrollViewComponent={ScrollView}
+            style={styles.modalScroll}
             contentContainerStyle={styles.modalScrollContent}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+            showsVerticalScrollIndicator
+            nestedScrollEnabled
+            scrollEventThrottle={16}
+            bounces
+            bottomOffset={24}
+            extraKeyboardSpace={20}
           >
             <ThemedText type="subtitle" style={{ marginBottom: 8 }}>
               {mode === "edit" ? "Edit routine" : "New routine"}
@@ -408,8 +437,8 @@ export function RoutineModal({
               </TouchableOpacity>
             </View>
           </KeyboardAwareScrollView>
-        </Pressable>
-      </Pressable>
+        </View>
+      </View>
     </Modal>
   );
 }
@@ -417,19 +446,32 @@ export function RoutineModal({
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "center",
+    alignItems: "stretch",
     padding: 20,
   },
+  modalBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
   modalCard: {
-    maxHeight: "90%",
     width: "100%",
+    alignSelf: "center",
     borderRadius: 12,
-    padding: 16,
+    padding: 0,
     backgroundColor: "white",
+    overflow: "hidden",
+    zIndex: 1,
+    elevation: 8,
+  },
+  modalScroll: {
+    flex: 1,
+    width: "100%",
   },
   modalScrollContent: {
-    paddingBottom: 8,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 24,
   },
   iconButton: {
     width: 36,
