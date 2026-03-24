@@ -109,3 +109,31 @@ export function sanitizeWorkoutHistory(value: unknown): WorkoutSession[] {
   }
   return out;
 }
+
+function setEntryHasData(s: SetEntry): boolean {
+  return Boolean(s.weight.trim() || s.reps.trim() || s.rpe.trim());
+}
+
+function exerciseHasLoggedSets(sets: SetEntry[] | undefined): sets is SetEntry[] {
+  if (!sets?.length) return false;
+  return sets.some(setEntryHasData);
+}
+
+/**
+ * Newest-first `history`: returns sets from the latest session matching routine + day
+ * where this exercise had at least one logged field; otherwise scans older sessions.
+ */
+export function getPreviousSetsForExercise(
+  history: WorkoutSession[],
+  routineId: string,
+  day: Day,
+  exercise: string
+): SetEntry[] | null {
+  for (const session of history) {
+    if (session.routineId !== routineId || session.day !== day) continue;
+    const sets = session.log[exercise];
+    if (!exerciseHasLoggedSets(sets)) continue;
+    return sets;
+  }
+  return null;
+}

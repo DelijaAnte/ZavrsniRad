@@ -15,6 +15,8 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 type Props = {
   exercise: string;
   sets: SetEntry[];
+  /** Sets from the most recent saved session for this routine/day (same indices as today). */
+  previousSets?: SetEntry[] | null;
   onLayout: () => void;
   onAddSet: () => void;
   onRemoveSet: (index: number) => void;
@@ -24,6 +26,7 @@ type Props = {
 export function ExerciseLogCard({
   exercise,
   sets,
+  previousSets,
   onLayout,
   onAddSet,
   onRemoveSet,
@@ -50,7 +53,7 @@ export function ExerciseLogCard({
       {sets.length ? (
         <View style={styles.setsList}>
           <View style={styles.setRow}>
-            <Text style={[styles.setIndex, styles.headerLabel]}></Text>
+            <View style={styles.indexCol} />
             <Text
               style={[
                 styles.columnHeader,
@@ -80,74 +83,127 @@ export function ExerciseLogCard({
             </Text>
             <View style={styles.removeButtonPlaceholder} />
           </View>
-          {sets.map((s, idx) => (
-            <View key={`${exercise}-${idx}`} style={styles.setRow}>
-              <Text style={[styles.setIndex, { color: palette.text }]}>
-                {idx + 1}
-              </Text>
-              <TextInput
-                placeholder="—"
-                placeholderTextColor={mutedLabel}
-                keyboardType="decimal-pad"
-                value={s.weight}
-                onChangeText={(v) => onUpdateSet(idx, { weight: v })}
-                style={[
-                  styles.input,
-                  styles.inputWeight,
-                  {
-                    color: palette.text,
-                    backgroundColor: inputBg,
-                    borderColor: inputBorder,
-                  },
-                ]}
-              />
-              <TextInput
-                placeholder="—"
-                placeholderTextColor={mutedLabel}
-                keyboardType="number-pad"
-                value={s.reps}
-                onChangeText={(v) => onUpdateSet(idx, { reps: v })}
-                style={[
-                  styles.input,
-                  styles.inputReps,
-                  {
-                    color: palette.text,
-                    backgroundColor: inputBg,
-                    borderColor: inputBorder,
-                  },
-                ]}
-              />
-              <TextInput
-                placeholder="—"
-                placeholderTextColor={mutedLabel}
-                keyboardType="decimal-pad"
-                value={s.rpe}
-                onChangeText={(v) => onUpdateSet(idx, { rpe: v })}
-                style={[
-                  styles.input,
-                  styles.inputRpe,
-                  {
-                    color: palette.text,
-                    backgroundColor: inputBg,
-                    borderColor: inputBorder,
-                  },
-                ]}
-              />
-              <TouchableOpacity
-                onPress={() => onRemoveSet(idx)}
-                style={[
-                  styles.removeButton,
-                  {
-                    backgroundColor: removeBtnBg,
-                    borderColor: removeBtnBorder,
-                  },
-                ]}
-                activeOpacity={0.85}
-              >
-                <Text style={styles.removeButtonText}>×</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
+          {sets.map((s, idx) => {
+            const prev = previousSets?.[idx];
+            const pw = prev?.weight.trim() ?? "";
+            const pr = prev?.reps.trim() ?? "";
+            const pp = prev?.rpe.trim() ?? "";
+            const showLastSession = Boolean(pw || pr || pp);
+            return (
+              <View key={`${exercise}-${idx}`} style={styles.setBlock}>
+                <View style={styles.setRow}>
+                  <View style={styles.indexCol}>
+                    <Text style={[styles.setIndex, { color: palette.text }]}>
+                      {idx + 1}
+                    </Text>
+                  </View>
+                  <TextInput
+                    placeholder="—"
+                    placeholderTextColor={mutedLabel}
+                    keyboardType="decimal-pad"
+                    value={s.weight}
+                    onChangeText={(v) => onUpdateSet(idx, { weight: v })}
+                    style={[
+                      styles.input,
+                      styles.inputWeight,
+                      {
+                        color: palette.text,
+                        backgroundColor: inputBg,
+                        borderColor: inputBorder,
+                      },
+                    ]}
+                  />
+                  <TextInput
+                    placeholder="—"
+                    placeholderTextColor={mutedLabel}
+                    keyboardType="number-pad"
+                    value={s.reps}
+                    onChangeText={(v) => onUpdateSet(idx, { reps: v })}
+                    style={[
+                      styles.input,
+                      styles.inputReps,
+                      {
+                        color: palette.text,
+                        backgroundColor: inputBg,
+                        borderColor: inputBorder,
+                      },
+                    ]}
+                  />
+                  <TextInput
+                    placeholder="—"
+                    placeholderTextColor={mutedLabel}
+                    keyboardType="decimal-pad"
+                    value={s.rpe}
+                    onChangeText={(v) => onUpdateSet(idx, { rpe: v })}
+                    style={[
+                      styles.input,
+                      styles.inputRpe,
+                      {
+                        color: palette.text,
+                        backgroundColor: inputBg,
+                        borderColor: inputBorder,
+                      },
+                    ]}
+                  />
+                  <TouchableOpacity
+                    onPress={() => onRemoveSet(idx)}
+                    style={[
+                      styles.removeButton,
+                      {
+                        backgroundColor: removeBtnBg,
+                        borderColor: removeBtnBorder,
+                      },
+                    ]}
+                    activeOpacity={0.85}
+                  >
+                    <Text style={styles.removeButtonText}>×</Text>
+                  </TouchableOpacity>
+                </View>
+                {showLastSession ? (
+                  <View style={styles.setRow}>
+                    <View style={styles.indexCol}>
+                      <Text
+                        style={[
+                          styles.lastSessionLabel,
+                          { color: mutedLabel },
+                        ]}
+                      >
+                        Last session:
+                      </Text>
+                    </View>
+                    <Text
+                      style={[
+                        styles.lastSessionValue,
+                        styles.inputWeight,
+                        { color: mutedLabel },
+                      ]}
+                    >
+                      {pw ? `${pw} kg` : "—"}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.lastSessionValue,
+                        styles.inputReps,
+                        { color: mutedLabel },
+                      ]}
+                    >
+                      {pr ? pr : "—"}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.lastSessionValue,
+                        styles.inputRpe,
+                        { color: mutedLabel },
+                      ]}
+                    >
+                      {pp ? pp : "—"}
+                    </Text>
+                    <View style={styles.removeButtonPlaceholder} />
+                  </View>
+                ) : null}
+              </View>
+            );
+          })}
         </View>
       ) : (
         <ThemedText style={styles.noSets}>Add your first set.</ThemedText>
@@ -173,8 +229,29 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   setsList: {
-    gap: 6,
+    gap: 8,
     marginTop: 10,
+  },
+  setBlock: {
+    gap: 4,
+  },
+  indexCol: {
+    width: 62,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  lastSessionLabel: {
+    fontSize: 10,
+    fontWeight: "600",
+    textAlign: "center",
+    lineHeight: 12,
+  },
+  lastSessionValue: {
+    fontSize: 11,
+    fontWeight: "600",
+    textAlign: "center",
+    paddingVertical: 4,
+    paddingHorizontal: 4,
   },
   setRow: {
     flexDirection: "row",
@@ -182,13 +259,9 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   setIndex: {
-    width: 24,
     textAlign: "center",
     fontWeight: "700",
     fontSize: 14,
-  },
-  headerLabel: {
-    fontWeight: "600",
   },
   columnHeader: {
     fontSize: 12,

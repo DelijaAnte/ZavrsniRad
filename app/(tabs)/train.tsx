@@ -16,10 +16,12 @@ import {
   RoutineDayPicker,
   useTrainLog,
 } from "@/components/train";
+import type { SetEntry } from "@/components/train/types";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { tintColorLight } from "@/constants/theme";
 import { useThemeColor } from "@/hooks/use-theme-color";
+import { getPreviousSetsForExercise } from "@/utils/training-data";
 
 /** Match `ParallaxScrollView` content padding so Train looks consistent with other tabs. */
 const CONTENT_PADDING = 32;
@@ -27,7 +29,8 @@ const CONTENT_PADDING = 32;
 export default function TrainScreen() {
   const insets = useSafeAreaInsets();
   const backgroundColor = useThemeColor({}, "background");
-  const { routines, saveWorkoutSession, loading, saving } = useRoutines();
+  const { routines, workoutHistory, saveWorkoutSession, loading, saving } =
+    useRoutines();
   const { log, reset, ensureExercise, addSet, removeSet, updateSet } =
     useTrainLog();
 
@@ -39,8 +42,24 @@ export default function TrainScreen() {
     return routines.find((r) => r.id === routineId) ?? null;
   }, [routineId, routines]);
 
-  const exercisesForDay =
-    (day && selectedRoutine?.exercisesByDay[day]) || [];
+  const exercisesForDay = useMemo(
+    () => (day && selectedRoutine?.exercisesByDay[day]) || [],
+    [day, selectedRoutine]
+  );
+
+  const previousSetsByExercise = useMemo((): Record<string, SetEntry[] | null> => {
+    if (!selectedRoutine || !day) return {};
+    const out: Record<string, SetEntry[] | null> = {};
+    for (const ex of exercisesForDay) {
+      out[ex] = getPreviousSetsForExercise(
+        workoutHistory,
+        selectedRoutine.id,
+        day,
+        ex
+      );
+    }
+    return out;
+  }, [workoutHistory, selectedRoutine, day, exercisesForDay]);
 
   function selectRoutine(nextId: string) {
     setRoutineId(nextId);
@@ -108,6 +127,7 @@ export default function TrainScreen() {
                   key={`${selectedRoutine.id}-${day}-${index}`}
                   exercise={exercise}
                   sets={log[exercise] ?? []}
+                  previousSets={previousSetsByExercise[exercise] ?? undefined}
                   onLayout={() => ensureExercise(exercise)}
                   onAddSet={() => addSet(exercise)}
                   onRemoveSet={(idx) => removeSet(exercise, idx)}
