@@ -7,6 +7,7 @@ import {
   RoutinePRList,
   TrainingConsistencyHeatmap,
   type ExerciseProgressCardView,
+  isExerciseProgressCardView,
   type ProgressionDetailView,
   personalRecordsForRoutine,
 } from "@/components/analyze";
@@ -131,6 +132,12 @@ export default function AnalyzeScreen() {
       return <ThemedText>No exercises for {day}.</ThemedText>;
     }
 
+    const cardDetailView: ExerciseProgressCardView = isExerciseProgressCardView(
+      progressionDetailView
+    )
+      ? progressionDetailView
+      : "topSet";
+
     return (
       <View style={styles.progressList}>
         {analyzeRows.map(({ exercise, progression }) =>
@@ -138,7 +145,7 @@ export default function AnalyzeScreen() {
             <ExerciseProgressCard
               key={exercise}
               progression={progression}
-              detailView={progressionDetailView as ExerciseProgressCardView}
+              detailView={cardDetailView}
             />
           ) : (
             <ThemedView

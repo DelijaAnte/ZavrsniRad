@@ -46,6 +46,9 @@ function parseDeleteAccountResponse(
 type AuthContextValue = {
   session: Session | null;
   initialized: boolean;
+  /** Set when the initial session restore fails (network, config, etc.). Cleared on successful restore or `clearInitError`. */
+  initError: string | null;
+  clearInitError: () => void;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (
     email: string,
@@ -61,19 +64,33 @@ export const AuthContext = createContext<AuthContextValue | undefined>(undefined
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [initialized, setInitialized] = useState(false);
+  const [initError, setInitError] = useState<string | null>(null);
+
+  const clearInitError = useCallback(() => {
+    setInitError(null);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
 
     void supabase.auth
       .getSession()
-      .then(({ data: { session: s } }) => {
+      .then(({ data: { session: s }, error }) => {
         if (cancelled) return;
+        if (error) {
+          setSession(null);
+          setInitError(error.message);
+          return;
+        }
         setSession(s);
+        setInitError(null);
       })
-      .catch(() => {
+      .catch((e) => {
         if (cancelled) return;
         setSession(null);
+        setInitError(
+          e instanceof Error ? e.message : "Could not restore your session. Check your connection."
+        );
       })
       .finally(() => {
         if (cancelled) return;
@@ -161,8 +178,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ session, initialized, signIn, signUp, signOut, deleteAccount }),
-    [session, initialized, signIn, signUp, signOut, deleteAccount]
+    () => ({
+      session,
+      initialized,
+      initError,
+      clearInitError,
+      signIn,
+      signUp,
+      signOut,
+      deleteAccount,
+    }),
+    [session, initialized, initError, clearInitError, signIn, signUp, signOut, deleteAccount]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

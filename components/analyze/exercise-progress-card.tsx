@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from "react-native";
 
 import { ExerciseProgressCharts } from "@/components/analyze/exercise-progress-charts";
 import type { ExerciseProgression } from "@/components/analyze/progression";
+import type { ExerciseProgressCardView } from "@/components/analyze/progression-views";
 import { ThemedText } from "@/components/themed-text";
 import { Colors, tintColorLight } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
@@ -70,8 +71,6 @@ function rpeDeltaColor(
   if (delta > 0) return "#8b2c2c";
   return tintColorLight;
 }
-
-export type ExerciseProgressCardView = "topSet" | "trend" | "allSets";
 
 export function ExerciseProgressCard({
   progression,

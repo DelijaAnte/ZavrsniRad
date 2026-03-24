@@ -1,8 +1,9 @@
-export {
-  ExerciseProgressCard,
-  type ExerciseProgressCardView,
-} from "./exercise-progress-card";
-export type { ProgressionDetailView } from "./progression-views";
+export { ExerciseProgressCard } from "./exercise-progress-card";
+export type {
+  ExerciseProgressCardView,
+  ProgressionDetailView,
+} from "./progression-views";
+export { isExerciseProgressCardView } from "./progression-views";
 export type { ExercisePersonalRecord } from "./pr";
 export { personalRecordsForRoutine, uniqueExerciseNamesForRoutine } from "./pr";
 export { RoutinePRList } from "./routine-pr-list";

@@ -28,8 +28,18 @@ function RootNavigator() {
 
   useEffect(() => {
     if (!initialized || !navigationReady) return;
-    void SplashScreen.hideAsync();
+    void SplashScreen.hideAsync().catch(() => {
+      /* already hidden or native module unavailable */
+    });
   }, [initialized, navigationReady]);
+
+  /** Never leave users stuck on the splash if auth or navigation stalls. */
+  useEffect(() => {
+    const t = setTimeout(() => {
+      void SplashScreen.hideAsync().catch(() => {});
+    }, 12_000);
+    return () => clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     if (!initialized || !navigationReady) return;

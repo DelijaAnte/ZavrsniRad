@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { KeyboardAvoidingView, Platform, StyleSheet, View } from "react-native";
+import { KeyboardAvoidingView, Platform, StyleSheet, Text, View } from "react-native";
 
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AuthModeSwitch } from "@/components/auth/auth-mode-switch";
 import { LoginForm } from "@/components/auth/login-form";
+import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { Colors } from "@/constants/theme";
 import { useAuth } from "@/context/auth-context";
@@ -15,7 +16,7 @@ export default function LoginScreen() {
   const colorScheme = useColorScheme() ?? "light";
   const palette = Colors[colorScheme];
   const insets = useSafeAreaInsets();
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, initError, clearInitError } = useAuth();
   const router = useRouter();
 
   const [email, setEmail] = useState("");
@@ -26,6 +27,7 @@ export default function LoginScreen() {
 
   async function onSubmit() {
     setMessage(null);
+    clearInitError();
     const trimmed = email.trim();
     if (!trimmed || !password) {
       setMessage("Enter email and password.");
@@ -53,6 +55,9 @@ export default function LoginScreen() {
       }
       setMessage("Check your email to confirm your account, then sign in.");
       setMode("signIn");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Something went wrong. Try again.";
+      setMessage(msg);
     } finally {
       setLoading(false);
     }
@@ -66,6 +71,16 @@ export default function LoginScreen() {
         keyboardVerticalOffset={Platform.OS === "ios" ? insets.top : 0}
       >
         <View style={styles.layout}>
+          {initError ? (
+            <View style={[styles.initBanner, { borderColor: palette.icon }]}>
+              <ThemedText type="defaultSemiBold" style={styles.initBannerTitle}>
+                Could not restore session
+              </ThemedText>
+              <Text style={[styles.initBannerBody, { color: palette.text }]}>
+                {initError}
+              </Text>
+            </View>
+          ) : null}
           <LoginForm
             style={{ paddingTop: insets.top }}
             email={email}
@@ -113,5 +128,19 @@ const styles = StyleSheet.create({
   bottomArea: {
     alignSelf: "stretch",
     width: "100%",
+  },
+  initBanner: {
+    marginBottom: 12,
+    padding: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    gap: 4,
+  },
+  initBannerTitle: {
+    fontSize: 15,
+  },
+  initBannerBody: {
+    fontSize: 14,
+    opacity: 0.9,
   },
 });

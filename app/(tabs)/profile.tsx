@@ -5,7 +5,7 @@ import { Colors, tintColorLight } from "@/constants/theme";
 import { useAuth } from "@/context/auth-context";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -26,8 +26,16 @@ export default function ProfileScreen() {
   const isLight = colorScheme === "light";
   const tint = Colors[colorScheme].tint;
   const [deletingAccount, setDeletingAccount] = useState(false);
+  const mountedRef = useRef(true);
   const { height: windowHeight } = useWindowDimensions();
   const insets = useSafeAreaInsets();
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const user = session?.user;
   const email = user?.email ?? null;
@@ -69,6 +77,7 @@ export default function ProfileScreen() {
             void (async () => {
               setDeletingAccount(true);
               const { error } = await deleteAccount();
+              if (!mountedRef.current) return;
               setDeletingAccount(false);
               if (error) {
                 Alert.alert("Could not delete account", error.message);

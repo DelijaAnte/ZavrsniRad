@@ -25,7 +25,7 @@ type LoginFormProps = {
   message: string | null;
   mode: AuthMode;
   loading: boolean;
-  onSubmit: () => void;
+  onSubmit: () => void | Promise<void>;
   palette: AuthPalette;
   colorScheme: "light" | "dark";
 };

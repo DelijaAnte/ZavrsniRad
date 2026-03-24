@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { StyleSheet, View, useWindowDimensions } from "react-native";
-import LineChart from "react-native-chart-kit/dist/line-chart";
+import { LineChart } from "react-native-chart-kit";
 
 import type { ExerciseProgression } from "@/components/analyze/progression";
 import { ThemedText } from "@/components/themed-text";
