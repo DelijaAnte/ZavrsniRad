@@ -17,6 +17,7 @@ import { ThemedText } from "@/components/themed-text";
 import type { Day, Routine } from "@/components/routines/types";
 import { DAYS } from "@/components/routines/types";
 import { Colors, tintColorLight } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 
 type RoutineModalDraft = {
   name: string;
@@ -118,10 +119,21 @@ export function RoutineModal({
   initialRoutine: Routine | null;
   onSave: (routine: Routine) => void;
 }) {
-  const selectedChipStyle = {
-    backgroundColor: Colors.light.tintMuted,
-    borderColor: Colors.light.tintBorder,
-  };
+  const colorScheme = useColorScheme() ?? "light";
+  const palette = Colors[colorScheme];
+  const isDark = colorScheme === "dark";
+  const surface = isDark ? "#1e2224" : "#fff";
+  const surfaceInset = isDark ? "#151718" : "#fff";
+  const border = isDark ? "#2f3638" : "#ddd";
+  const borderMuted = isDark ? "#2f3638" : "#eee";
+  const selectedChipStyle = useMemo(
+    () => ({
+      backgroundColor: palette.tintMuted,
+      borderColor: palette.tintBorder,
+    }),
+    [palette.tintBorder, palette.tintMuted]
+  );
+  const activeChipLabelColor = isDark ? palette.tint : tintColorLight;
 
   const [draft, dispatch] = useReducer(routineModalReducer, undefined, emptyDraft);
 
@@ -131,13 +143,20 @@ export function RoutineModal({
     return name.trim().length > 0 && selectedDays.length > 0;
   }, [name, selectedDays.length]);
 
-  const { height: windowHeight } = useWindowDimensions();
-  /** Fixed sheet height so ScrollView has a real viewport (content can extend and scroll). */
-  const modalSheetHeight = useMemo(() => {
-    const overlayVerticalPadding = 40; // styles.modalOverlay padding * 2
-    const inner = Math.max(0, windowHeight - overlayVerticalPadding);
-    return Math.max(280, Math.round(inner * 0.9));
-  }, [windowHeight]);
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  /** Sheet size: capped width so it is not edge-to-edge on large screens; height leaves visible backdrop. */
+  const { modalSheetHeight, modalCardMaxWidth } = useMemo(() => {
+    const overlayPadding = 20;
+    const overlayPadTotal = overlayPadding * 2;
+    const innerW = Math.max(0, windowWidth - overlayPadTotal);
+    const innerH = Math.max(0, windowHeight - overlayPadTotal);
+    const maxWidth = Math.min(520, Math.max(280, innerW));
+    const height = Math.min(
+      620,
+      Math.max(280, Math.round(innerH * 0.78))
+    );
+    return { modalSheetHeight: height, modalCardMaxWidth: maxWidth };
+  }, [windowWidth, windowHeight]);
 
   const wasVisibleRef = useRef(false);
 
@@ -233,7 +252,14 @@ export function RoutineModal({
           accessibilityRole="button"
         />
         <View
-          style={[styles.modalCard, { height: modalSheetHeight }]}
+          style={[
+            styles.modalCard,
+            {
+              height: modalSheetHeight,
+              maxWidth: modalCardMaxWidth,
+              backgroundColor: surface,
+            },
+          ]}
           collapsable={false}
         >
           <KeyboardAwareScrollView
@@ -265,17 +291,30 @@ export function RoutineModal({
                 accessibilityRole="button"
                 accessibilityLabel="Close"
                 onPress={close}
-                style={styles.iconButton}
+                style={[
+                  styles.iconButton,
+                  { borderColor: borderMuted, backgroundColor: surfaceInset },
+                ]}
               >
-                <Text style={styles.iconButtonText}>×</Text>
+                <Text style={[styles.iconButtonText, { color: palette.text }]}>
+                  ×
+                </Text>
               </TouchableOpacity>
             </View>
 
             <TextInput
               placeholder="e.g. Upper body split"
+              placeholderTextColor={palette.icon}
               value={name}
               onChangeText={(v) => dispatch({ type: "setName", name: v })}
-              style={styles.input}
+              style={[
+                styles.input,
+                {
+                  borderColor: border,
+                  backgroundColor: surfaceInset,
+                  color: palette.text,
+                },
+              ]}
               accessibilityLabel="Routine name"
               returnKeyType="done"
             />
@@ -288,13 +327,17 @@ export function RoutineModal({
                   <TouchableOpacity
                     key={d}
                     onPress={() => dispatch({ type: "toggleDay", day: d })}
-                    style={[styles.chip, active && selectedChipStyle]}
+                    style={[
+                      styles.chip,
+                      { borderColor: border, backgroundColor: surfaceInset },
+                      active && selectedChipStyle,
+                    ]}
                     activeOpacity={0.85}
                   >
                     <Text
                       style={[
                         styles.chipText,
-                        active && { color: tintColorLight },
+                        { color: active ? activeChipLabelColor : palette.text },
                       ]}
                     >
                       {d}
@@ -317,13 +360,21 @@ export function RoutineModal({
                       <TouchableOpacity
                         key={d}
                         onPress={() => dispatch({ type: "setActiveDay", day: d })}
-                        style={[styles.chip, isActive && selectedChipStyle]}
+                        style={[
+                          styles.chip,
+                          { borderColor: border, backgroundColor: surfaceInset },
+                          isActive && selectedChipStyle,
+                        ]}
                         activeOpacity={0.85}
                       >
                         <Text
                           style={[
                             styles.chipText,
-                            isActive && { color: tintColorLight },
+                            {
+                              color: isActive
+                                ? activeChipLabelColor
+                                : palette.text,
+                            },
                           ]}
                         >
                           {d}
@@ -340,10 +391,23 @@ export function RoutineModal({
                         {(exercisesByDay[activeDay] ?? []).map((ex, idx) => (
                           <View
                             key={`${activeDay}-${idx}-${ex}`}
-                            style={styles.exerciseItem}
+                            style={[
+                              styles.exerciseItem,
+                              {
+                                borderColor: borderMuted,
+                                backgroundColor: surfaceInset,
+                              },
+                            ]}
                           >
-                            <Text style={styles.exerciseIndex}>{idx + 1}</Text>
-                            <Text style={styles.exerciseName} numberOfLines={2}>
+                            <Text
+                              style={[styles.exerciseIndex, { color: palette.text }]}
+                            >
+                              {idx + 1}
+                            </Text>
+                            <Text
+                              style={[styles.exerciseName, { color: palette.text }]}
+                              numberOfLines={2}
+                            >
                               {ex}
                             </Text>
                             <TouchableOpacity
@@ -356,7 +420,13 @@ export function RoutineModal({
                                   index: idx,
                                 })
                               }
-                              style={styles.removeButton}
+                              style={[
+                                styles.removeButton,
+                                {
+                                  borderColor: borderMuted,
+                                  backgroundColor: surface,
+                                },
+                              ]}
                               activeOpacity={0.85}
                             >
                               <Text style={styles.removeButtonText}>
@@ -391,9 +461,18 @@ export function RoutineModal({
                     ? `Add exercise for ${activeDay} (e.g. Bench Press 3x8)`
                     : "Select a day above"
                 }
+                placeholderTextColor={palette.icon}
                 value={exerciseText}
                 onChangeText={(v) => dispatch({ type: "setExerciseText", text: v })}
-                style={[styles.input, styles.exerciseInput]}
+                style={[
+                  styles.input,
+                  styles.exerciseInput,
+                  {
+                    borderColor: border,
+                    backgroundColor: surfaceInset,
+                    color: palette.text,
+                  },
+                ]}
                 returnKeyType="done"
                 onSubmitEditing={addExercisePress}
                 editable={!!activeDay}
@@ -414,11 +493,21 @@ export function RoutineModal({
 
             <View style={styles.modalActions}>
               <TouchableOpacity
-                style={styles.secondaryButton}
+                style={[
+                  styles.secondaryButton,
+                  {
+                    borderColor: borderMuted,
+                    backgroundColor: surfaceInset,
+                  },
+                ]}
                 onPress={close}
                 activeOpacity={0.85}
               >
-                <Text style={styles.secondaryButtonText}>Cancel</Text>
+                <Text
+                  style={[styles.secondaryButtonText, { color: palette.text }]}
+                >
+                  Cancel
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -447,7 +536,7 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     justifyContent: "center",
-    alignItems: "stretch",
+    alignItems: "center",
     padding: 20,
   },
   modalBackdrop: {
@@ -456,10 +545,8 @@ const styles = StyleSheet.create({
   },
   modalCard: {
     width: "100%",
-    alignSelf: "center",
     borderRadius: 12,
     padding: 0,
-    backgroundColor: "white",
     overflow: "hidden",
     zIndex: 1,
     elevation: 8,
@@ -478,19 +565,15 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#eee",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "white",
   },
   iconButtonText: {
     fontSize: 22,
     lineHeight: 24,
-    color: "#0c2f35",
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ddd",
     padding: 10,
     borderRadius: 8,
     marginVertical: 8,
@@ -506,11 +589,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: "#ddd",
-    backgroundColor: "white",
   },
   chipText: {
-    color: "#0c2f35",
     fontWeight: "600",
   },
   addExerciseRow: {
@@ -538,27 +618,21 @@ const styles = StyleSheet.create({
     gap: 10,
     padding: 10,
     borderWidth: 1,
-    borderColor: "#eee",
     borderRadius: 10,
-    backgroundColor: "white",
   },
   exerciseIndex: {
     width: 22,
     textAlign: "center",
     fontWeight: "700",
-    color: "#0c2f35",
   },
   exerciseName: {
     flex: 1,
-    color: "#0c2f35",
   },
   removeButton: {
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#eee",
-    backgroundColor: "white",
   },
   removeButtonText: {
     color: "#7a2b2b",
@@ -575,12 +649,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#eee",
-    backgroundColor: "white",
   },
   secondaryButtonText: {
     fontWeight: "700",
-    color: "#0c2f35",
   },
   primaryButton: {
     paddingVertical: 10,
