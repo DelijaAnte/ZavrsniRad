@@ -54,7 +54,7 @@ function parseRpe(raw: string): number | null {
   return n;
 }
 
-function metricsFromSetEntry(s: SetEntry): {
+export function metricsFromSetEntry(s: SetEntry): {
   kg: number | null;
   reps: number | null;
   rpe: number | null;

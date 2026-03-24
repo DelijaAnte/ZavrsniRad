@@ -4,9 +4,11 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import ParallaxScrollView from "@/components/parallax-scroll-view";
 import {
   ExerciseProgressCard,
+  RoutinePRList,
   TrainingConsistencyHeatmap,
   type ExerciseProgressCardView,
   type ProgressionDetailView,
+  personalRecordsForRoutine,
 } from "@/components/analyze";
 import {
   progressionForExercise,
@@ -24,6 +26,7 @@ const PROGRESSION_VIEWS: { key: ProgressionDetailView; label: string }[] = [
   { key: "topSet", label: "Top set" },
   { key: "trend", label: "Trend" },
   { key: "allSets", label: "All sets" },
+  { key: "pr", label: "PR" },
   { key: "activity", label: "Activity" },
 ];
 
@@ -52,6 +55,16 @@ export default function AnalyzeScreen() {
     [workoutHistory]
   );
 
+  const sessionsForSelectedRoutine = useMemo(() => {
+    if (!routineId) return [];
+    return sessionsSorted.filter((s) => s.routineId === routineId);
+  }, [sessionsSorted, routineId]);
+
+  const prRows = useMemo(() => {
+    if (!selectedRoutine) return [];
+    return personalRecordsForRoutine(sessionsSorted, selectedRoutine);
+  }, [sessionsSorted, selectedRoutine]);
+
   const analyzeRows = useMemo(() => {
     if (!routineId || !day || !exercisesForDay.length) return [];
     return exercisesForDay.map((exercise) => ({
@@ -72,6 +85,81 @@ export default function AnalyzeScreen() {
 
   function selectDay(nextDay: Day) {
     setDay(nextDay);
+  }
+
+  function renderBody() {
+    if (loading) {
+      return <ThemedText>Loading history…</ThemedText>;
+    }
+
+    if (progressionDetailView === "activity") {
+      if (!routineId) {
+        return (
+          <ThemedText>Select a routine above to see activity for that program.</ThemedText>
+        );
+      }
+      return (
+        <TrainingConsistencyHeatmap
+          sessions={sessionsForSelectedRoutine}
+          dataSubtitle="Days you logged a workout for this routine."
+          emptyHint="No workouts saved for this routine yet. Log a session on the Train tab."
+        />
+      );
+    }
+
+    if (progressionDetailView === "pr") {
+      if (!routineId || !selectedRoutine) {
+        return (
+          <ThemedText>Select a routine above to see personal records.</ThemedText>
+        );
+      }
+      if (!prRows.length) {
+        return <ThemedText>No exercises in this routine.</ThemedText>;
+      }
+      return <RoutinePRList items={prRows} />;
+    }
+
+    if (!routineId || !day) {
+      return (
+        <ThemedText>
+          Select a routine and day above to view exercise progression.
+        </ThemedText>
+      );
+    }
+
+    if (!analyzeRows.length) {
+      return <ThemedText>No exercises for {day}.</ThemedText>;
+    }
+
+    return (
+      <View style={styles.progressList}>
+        {analyzeRows.map(({ exercise, progression }) =>
+          progression ? (
+            <ExerciseProgressCard
+              key={exercise}
+              progression={progression}
+              detailView={progressionDetailView as ExerciseProgressCardView}
+            />
+          ) : (
+            <ThemedView
+              key={exercise}
+              style={[
+                styles.placeholderCard,
+                {
+                  backgroundColor: isDark ? "#1e2224" : "#fafafa",
+                  borderColor: isDark ? "#2f3638" : "#eee",
+                },
+              ]}
+            >
+              <ThemedText type="defaultSemiBold">{exercise}</ThemedText>
+              <ThemedText style={styles.muted}>
+                No saved sessions for this routine and day.
+              </ThemedText>
+            </ThemedView>
+          )
+        )}
+      </View>
+    );
   }
 
   return (
@@ -146,45 +234,7 @@ export default function AnalyzeScreen() {
           })}
         </View>
 
-        {loading ? (
-          <ThemedText>Loading history…</ThemedText>
-        ) : progressionDetailView === "activity" ? (
-          <TrainingConsistencyHeatmap sessions={sessionsSorted} />
-        ) : !selectedRoutine || !routineId || !day ? (
-          <ThemedText>
-            Select a routine and day above to view exercise progression.
-          </ThemedText>
-        ) : analyzeRows.length ? (
-          <View style={styles.progressList}>
-            {analyzeRows.map(({ exercise, progression }) =>
-              progression ? (
-                <ExerciseProgressCard
-                  key={exercise}
-                  progression={progression}
-                  detailView={progressionDetailView as ExerciseProgressCardView}
-                />
-              ) : (
-                <ThemedView
-                  key={exercise}
-                  style={[
-                    styles.placeholderCard,
-                    {
-                      backgroundColor: isDark ? "#1e2224" : "#fafafa",
-                      borderColor: isDark ? "#2f3638" : "#eee",
-                    },
-                  ]}
-                >
-                  <ThemedText type="defaultSemiBold">{exercise}</ThemedText>
-                  <ThemedText style={styles.muted}>
-                    No saved sessions for this routine and day.
-                  </ThemedText>
-                </ThemedView>
-              )
-            )}
-          </View>
-        ) : (
-          <ThemedText>No exercises for {day}.</ThemedText>
-        )}
+        {renderBody()}
       </ThemedView>
     </ParallaxScrollView>
   );

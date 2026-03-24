@@ -29,7 +29,7 @@ function monthKeyFromParts(year: number, monthIndex: number): string {
   return `${year}-${String(monthIndex + 1).padStart(2, "0")}`;
 }
 
-/** Count saved sessions per local calendar day (any routine / template day). */
+/** Count saved sessions per local calendar day. */
 function sessionCountsByCalendarDay(sessions: WorkoutSession[]): Map<number, number> {
   const counts = new Map<number, number>();
   for (const s of sessions) {
@@ -62,10 +62,21 @@ function listMonthsBetween(
   return out;
 }
 
+const DEFAULT_DATA_SUBTITLE =
+  "Days you logged any workout in the app (all routines).";
+const DEFAULT_EMPTY_HINT =
+  "No workouts logged yet. Save a session on the Train tab to fill this calendar.";
+
 export function TrainingConsistencyHeatmap({
   sessions,
+  dataSubtitle = DEFAULT_DATA_SUBTITLE,
+  emptyHint = DEFAULT_EMPTY_HINT,
 }: {
   sessions: WorkoutSession[];
+  /** Shown when at least one day has a session (e.g. routine-scoped copy). */
+  dataSubtitle?: string;
+  /** Shown when there are no sessions in the given list. */
+  emptyHint?: string;
 }) {
   const colorScheme = useColorScheme() ?? "light";
   const palette = Colors[colorScheme];
@@ -240,16 +251,11 @@ export function TrainingConsistencyHeatmap({
     <View style={[styles.card, { backgroundColor: cardBg, borderColor: cardBorder }]}>
       <ThemedText type="defaultSemiBold">Activity</ThemedText>
       {distinctDaysWithTraining > 0 ? (
-        <ThemedText style={styles.muted}>
-          Days you logged any workout in the app (all routines).
-        </ThemedText>
+        <ThemedText style={styles.muted}>{dataSubtitle}</ThemedText>
       ) : null}
 
       {distinctDaysWithTraining === 0 ? (
-        <ThemedText style={styles.emptyHint}>
-          No workouts logged yet. Save a session on the Train tab to fill this
-          calendar.
-        </ThemedText>
+        <ThemedText style={styles.emptyHint}>{emptyHint}</ThemedText>
       ) : (
         <>
           {availableMonths.length > 1 ? (
