@@ -238,16 +238,16 @@ export function TrainingConsistencyHeatmap({
 
   return (
     <View style={[styles.card, { backgroundColor: cardBg, borderColor: cardBorder }]}>
-      <ThemedText type="defaultSemiBold">Training consistency</ThemedText>
+      <ThemedText type="defaultSemiBold">Activity</ThemedText>
       {distinctDaysWithTraining > 0 ? (
         <ThemedText style={styles.muted}>
-          Highlights every calendar day you saved any workout (all routines).
+          Days you logged any workout in the app (all routines).
         </ThemedText>
       ) : null}
 
       {distinctDaysWithTraining === 0 ? (
         <ThemedText style={styles.emptyHint}>
-          No saved workouts yet. Log a session on the Train tab to fill this
+          No workouts logged yet. Save a session on the Train tab to fill this
           calendar.
         </ThemedText>
       ) : (

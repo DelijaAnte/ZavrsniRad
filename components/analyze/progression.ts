@@ -1,27 +1,37 @@
 import type { Day, WorkoutSession } from "@/components/routines/types";
-import type { ExerciseLog } from "@/components/train/types";
+import type { ExerciseLog, SetEntry } from "@/components/train/types";
 
-export type AnalyzePeriod = "week" | "month" | "all";
-
-/** One saved training for this exercise: best load and best reps in that session. */
+/** First working set per saved session (chronological). */
 export type SessionMetricRow = {
   at: string;
   kg: number | null;
   reps: number | null;
+  rpe: number | null;
+};
+
+export type SessionAllSetsRow = {
+  at: string;
+  sets: { kg: number | null; reps: number | null; rpe: number | null }[];
 };
 
 export type ExerciseProgression = {
   exercise: string;
   sessionsUsed: number;
-  /** Every matching session in the period, oldest first. */
+  /** Matching sessions, oldest first — first set only. */
   rows: SessionMetricRow[];
-  weightFirst: number | null;
+  /** Every logged set per session, same order as rows / sessions. */
+  allSetsBySession: SessionAllSetsRow[];
+  weightPrev: number | null;
   weightLast: number | null;
   weightDelta: number | null;
-  repsFirst: number | null;
+  repsPrev: number | null;
   repsLast: number | null;
   repsDelta: number | null;
-  firstAt: string;
+  rpePrev: number | null;
+  rpeLast: number | null;
+  /** last − previous; lower is better (use inverted colors). */
+  rpeDelta: number | null;
+  prevAt: string;
   lastAt: string;
 };
 
@@ -37,42 +47,54 @@ function parseReps(raw: string): number {
   return Number.isFinite(n) ? n : 0;
 }
 
-function bestKgAndRepsForExercise(
-  log: ExerciseLog,
-  exercise: string
-): { kg: number | null; reps: number | null } {
-  const sets = log[exercise];
-  if (!sets?.length) return { kg: null, reps: null };
-  let maxKg = 0;
-  let maxReps = 0;
-  for (const s of sets) {
-    maxKg = Math.max(maxKg, parseWeight(s.weight));
-    maxReps = Math.max(maxReps, parseReps(s.reps));
-  }
+function parseRpe(raw: string): number | null {
+  const t = raw.trim().replace(",", ".");
+  const n = Number.parseFloat(t);
+  if (!Number.isFinite(n)) return null;
+  return n;
+}
+
+function metricsFromSetEntry(s: SetEntry): {
+  kg: number | null;
+  reps: number | null;
+  rpe: number | null;
+} {
+  const kgRaw = parseWeight(s.weight);
+  const repsRaw = parseReps(s.reps);
+  const rpeRaw = parseRpe(s.rpe);
   return {
-    kg: maxKg > 0 ? maxKg : null,
-    reps: maxReps > 0 ? maxReps : null,
+    kg: kgRaw > 0 ? kgRaw : null,
+    reps: repsRaw > 0 ? repsRaw : null,
+    rpe: rpeRaw != null && rpeRaw > 0 ? rpeRaw : null,
   };
 }
 
-export function filterSessionsByPeriod(
-  sessions: WorkoutSession[],
-  period: AnalyzePeriod,
-  now = new Date()
+function firstSetMetricsForExercise(
+  log: ExerciseLog,
+  exercise: string
+): { kg: number | null; reps: number | null; rpe: number | null } {
+  const sets = log[exercise];
+  if (!sets?.length) return { kg: null, reps: null, rpe: null };
+  return metricsFromSetEntry(sets[0]);
+}
+
+function allSetsMetricsForExercise(
+  log: ExerciseLog,
+  exercise: string
+): { kg: number | null; reps: number | null; rpe: number | null }[] {
+  const sets = log[exercise];
+  if (!sets?.length) return [];
+  return sets.map(metricsFromSetEntry);
+}
+
+/** Valid sessions only, oldest first. */
+export function sortWorkoutSessionsChronologically(
+  sessions: WorkoutSession[]
 ): WorkoutSession[] {
-  const end = now.getTime();
-  let start = 0;
-  if (period === "week") {
-    start = end - 7 * 24 * 60 * 60 * 1000;
-  } else if (period === "month") {
-    start = end - 30 * 24 * 60 * 60 * 1000;
-  }
   return sessions
     .filter((s) => {
       const t = new Date(s.performedAt).getTime();
-      if (Number.isNaN(t)) return false;
-      if (period === "all") return true;
-      return t >= start && t <= end;
+      return !Number.isNaN(t);
     })
     .sort(
       (a, b) =>
@@ -81,12 +103,12 @@ export function filterSessionsByPeriod(
 }
 
 export function progressionForExercise(
-  sessionsInPeriod: WorkoutSession[],
+  sessionsSorted: WorkoutSession[],
   routineId: string,
   day: Day,
   exercise: string
 ): ExerciseProgression | null {
-  const relevant = sessionsInPeriod.filter(
+  const relevant = sessionsSorted.filter(
     (s) =>
       s.routineId === routineId &&
       s.day === day &&
@@ -95,42 +117,60 @@ export function progressionForExercise(
   if (!relevant.length) return null;
 
   const rows: SessionMetricRow[] = relevant.map((s) => {
-    const { kg, reps } = bestKgAndRepsForExercise(s.log, exercise);
-    return { at: s.performedAt, kg, reps };
+    const { kg, reps, rpe } = firstSetMetricsForExercise(s.log, exercise);
+    return { at: s.performedAt, kg, reps, rpe };
   });
 
-  const first = rows[0];
-  const last = rows[rows.length - 1];
+  const allSetsBySession: SessionAllSetsRow[] = relevant.map((s) => ({
+    at: s.performedAt,
+    sets: allSetsMetricsForExercise(s.log, exercise),
+  }));
+
+  const n = rows.length;
+  const last = rows[n - 1];
+  const prev = n >= 2 ? rows[n - 2] : null;
 
   const weightDelta =
-    first.kg != null && last.kg != null ? last.kg - first.kg : null;
+    prev && last.kg != null && prev.kg != null
+      ? last.kg - prev.kg
+      : null;
   const repsDelta =
-    first.reps != null && last.reps != null ? last.reps - first.reps : null;
+    prev && last.reps != null && prev.reps != null
+      ? last.reps - prev.reps
+      : null;
+  const rpeDelta =
+    prev && last.rpe != null && prev.rpe != null
+      ? last.rpe - prev.rpe
+      : null;
 
   return {
     exercise,
-    sessionsUsed: rows.length,
+    sessionsUsed: n,
     rows,
-    weightFirst: first.kg,
+    allSetsBySession,
+    weightPrev: prev?.kg ?? null,
     weightLast: last.kg,
     weightDelta,
-    repsFirst: first.reps,
+    repsPrev: prev?.reps ?? null,
     repsLast: last.reps,
     repsDelta,
-    firstAt: first.at,
+    rpePrev: prev?.rpe ?? null,
+    rpeLast: last.rpe,
+    rpeDelta,
+    prevAt: prev?.at ?? "",
     lastAt: last.at,
   };
 }
 
 export function progressionsForDay(
-  sessionsInPeriod: WorkoutSession[],
+  sessionsSorted: WorkoutSession[],
   routineId: string,
   day: Day,
   exerciseNames: string[]
 ): ExerciseProgression[] {
   const out: ExerciseProgression[] = [];
   for (const name of exerciseNames) {
-    const p = progressionForExercise(sessionsInPeriod, routineId, day, name);
+    const p = progressionForExercise(sessionsSorted, routineId, day, name);
     if (p) out.push(p);
   }
   return out;

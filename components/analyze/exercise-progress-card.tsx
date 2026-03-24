@@ -25,6 +25,11 @@ function formatDashNumber(n: number | null, isKg: boolean): string {
   return isKg ? formatKg(n) : `${Math.round(n)}`;
 }
 
+function formatRpe(n: number | null): string {
+  if (n == null) return "—";
+  return Number.isInteger(n) ? `${n}` : n.toFixed(1);
+}
+
 function formatDelta(n: number | null, isKg: boolean): string {
   if (n == null) return "—";
   if (n === 0) return "0";
@@ -33,7 +38,15 @@ function formatDelta(n: number | null, isKg: boolean): string {
   return `${sign}${isKg ? formatKg(mag) : Math.round(mag)}`;
 }
 
-function deltaColor(
+function formatRpeDelta(n: number | null): string {
+  if (n == null) return "—";
+  if (n === 0) return "0";
+  const sign = n > 0 ? "+" : "−";
+  const mag = Math.abs(n);
+  return `${sign}${Number.isInteger(mag) ? mag : mag.toFixed(1)}`;
+}
+
+function deltaColorHigherIsBetter(
   delta: number | null,
   needsMoreSessions: boolean,
   neutralColor: string
@@ -45,8 +58,20 @@ function deltaColor(
   return tintColorLight;
 }
 
-/** Table vs line charts inside each exercise card. */
-export type ExerciseProgressCardView = "table" | "graphs";
+/** Lower RPE vs previous = progress (green). */
+function rpeDeltaColor(
+  delta: number | null,
+  needsMoreSessions: boolean,
+  neutralColor: string
+): string {
+  if (needsMoreSessions) return neutralColor;
+  if (delta == null) return neutralColor;
+  if (delta < 0) return "#1a6b4a";
+  if (delta > 0) return "#8b2c2c";
+  return tintColorLight;
+}
+
+export type ExerciseProgressCardView = "topSet" | "trend" | "allSets";
 
 export function ExerciseProgressCard({
   progression,
@@ -67,14 +92,46 @@ export function ExerciseProgressCard({
 
   const needsMoreSessions = progression.sessionsUsed < 2;
 
+  const showRpeTieBreak = useMemo(() => {
+    if (progression.sessionsUsed < 2) return false;
+    const wp = progression.weightPrev;
+    const wl = progression.weightLast;
+    const rp = progression.repsPrev;
+    const rl = progression.repsLast;
+    if (wp == null || wl == null || rp == null || rl == null) return false;
+    return wp === wl && rp === rl;
+  }, [
+    progression.sessionsUsed,
+    progression.weightPrev,
+    progression.weightLast,
+    progression.repsPrev,
+    progression.repsLast,
+  ]);
+
   const weightDeltaColor = useMemo(
     () =>
-      deltaColor(progression.weightDelta, needsMoreSessions, palette.icon),
+      deltaColorHigherIsBetter(
+        progression.weightDelta,
+        needsMoreSessions,
+        palette.icon
+      ),
     [progression.weightDelta, needsMoreSessions, palette.icon]
   );
   const repsDeltaColor = useMemo(
-    () => deltaColor(progression.repsDelta, needsMoreSessions, palette.icon),
+    () =>
+      deltaColorHigherIsBetter(
+        progression.repsDelta,
+        needsMoreSessions,
+        palette.icon
+      ),
     [progression.repsDelta, needsMoreSessions, palette.icon]
+  );
+  const rpeDColor = useMemo(
+    () =>
+      showRpeTieBreak
+        ? rpeDeltaColor(progression.rpeDelta, false, palette.icon)
+        : palette.icon,
+    [progression.rpeDelta, palette.icon, showRpeTieBreak]
   );
 
   return (
@@ -86,10 +143,12 @@ export function ExerciseProgressCard({
     >
       <ThemedText type="defaultSemiBold">{progression.exercise}</ThemedText>
       <Text style={[styles.unitHint, { color: palette.icon }]}>
-        Best weight & best reps per saved session on this day
+        {detailView === "allSets"
+          ? "Every logged set per workout"
+          : "Top set (first set) per saved session on this day"}
       </Text>
 
-      {detailView === "table" ? (
+      {detailView === "topSet" ? (
         <View style={[styles.sessionList, { borderColor: tableBorder }]}>
           <View
             style={[
@@ -97,15 +156,36 @@ export function ExerciseProgressCard({
               { backgroundColor: palette.tintMuted },
             ]}
           >
-            <Text style={[styles.sessionHead, styles.colDate, { color: palette.icon }]}>
+            <Text
+              style={[styles.sessionHead, styles.colDate, { color: palette.icon }]}
+            >
               Date
             </Text>
-            <Text style={[styles.sessionHead, styles.colKg, { color: palette.icon }]}>
+            <Text
+              style={[styles.sessionHead, styles.colKg, { color: palette.icon }]}
+            >
               kg
             </Text>
-            <Text style={[styles.sessionHead, styles.colReps, { color: palette.icon }]}>
+            <Text
+              style={[
+                styles.sessionHead,
+                styles.colReps,
+                { color: palette.icon },
+              ]}
+            >
               reps
             </Text>
+            {showRpeTieBreak ? (
+              <Text
+                style={[
+                  styles.sessionHead,
+                  styles.colRpe,
+                  { color: palette.icon },
+                ]}
+              >
+                RPE
+              </Text>
+            ) : null}
           </View>
           {progression.rows.map((row, idx) => (
             <View
@@ -117,80 +197,206 @@ export function ExerciseProgressCard({
               ]}
             >
               <Text
-                style={[styles.sessionCell, styles.colDate, { color: palette.text }]}
+                style={[
+                  styles.sessionCell,
+                  styles.colDate,
+                  { color: palette.text },
+                ]}
                 numberOfLines={1}
               >
                 {formatShortDate(row.at)}
               </Text>
-              <Text style={[styles.sessionCell, styles.colKg, { color: palette.text }]}>
+              <Text
+                style={[styles.sessionCell, styles.colKg, { color: palette.text }]}
+              >
                 {formatDashNumber(row.kg, true)}
               </Text>
-              <Text style={[styles.sessionCell, styles.colReps, { color: palette.text }]}>
+              <Text
+                style={[
+                  styles.sessionCell,
+                  styles.colReps,
+                  { color: palette.text },
+                ]}
+              >
                 {formatDashNumber(row.reps, false)}
               </Text>
+              {showRpeTieBreak ? (
+                <Text
+                  style={[
+                    styles.sessionCell,
+                    styles.colRpe,
+                    { color: palette.text },
+                  ]}
+                >
+                  {formatRpe(row.rpe)}
+                </Text>
+              ) : null}
             </View>
           ))}
         </View>
-      ) : (
+      ) : null}
+
+      {detailView === "trend" ? (
         <ExerciseProgressCharts progression={progression} />
-      )}
+      ) : null}
 
-      <View style={[styles.summary, { borderTopColor: summaryDivider }]}>
-        <ThemedText type="defaultSemiBold" style={styles.summaryTitle}>
-          First → latest
-        </ThemedText>
-
-        <View style={styles.metricBlock}>
-          <Text style={[styles.metricLabel, { color: palette.icon }]}>
-            Weight (kg)
-          </Text>
-          <View style={styles.metricValues}>
-            <Text style={[styles.metricMain, { color: palette.text }]}>
-              {formatDashNumber(progression.weightFirst, true)} →{" "}
-              {formatDashNumber(progression.weightLast, true)}
-            </Text>
-            <Text
-              style={[
-                styles.metricDelta,
-                { color: weightDeltaColor },
-              ]}
+      {detailView === "allSets" ? (
+        <View style={styles.allSetsWrap}>
+          {progression.allSetsBySession.map((block, bi) => (
+            <View
+              key={`${block.at}-${bi}`}
+              style={[styles.sessionBlock, { borderColor: tableBorder }]}
             >
-              Δ {formatDelta(progression.weightDelta, true)}
-            </Text>
-          </View>
+              <Text
+                style={[styles.sessionBlockTitle, { color: palette.text }]}
+              >
+                {formatShortDate(block.at)}
+              </Text>
+              <View
+                style={[
+                  styles.miniHeader,
+                  { backgroundColor: palette.tintMuted },
+                ]}
+              >
+                <Text style={[styles.miniHead, styles.colSet, { color: palette.icon }]}>
+                  Set
+                </Text>
+                <Text style={[styles.miniHead, styles.colKg, { color: palette.icon }]}>
+                  kg
+                </Text>
+                <Text
+                  style={[styles.miniHead, styles.colReps, { color: palette.icon }]}
+                >
+                  reps
+                </Text>
+                <Text
+                  style={[styles.miniHead, styles.colRpe, { color: palette.icon }]}
+                >
+                  RPE
+                </Text>
+              </View>
+              {block.sets.map((set, si) => (
+                <View
+                  key={si}
+                  style={[
+                    styles.sessionRow,
+                    { borderTopColor: rowBorder },
+                    si % 2 === 1 && { backgroundColor: rowAltBg },
+                  ]}
+                >
+                  <Text
+                    style={[styles.sessionCell, styles.colSet, { color: palette.text }]}
+                  >
+                    {si + 1}
+                  </Text>
+                  <Text
+                    style={[styles.sessionCell, styles.colKg, { color: palette.text }]}
+                  >
+                    {formatDashNumber(set.kg, true)}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.sessionCell,
+                      styles.colReps,
+                      { color: palette.text },
+                    ]}
+                  >
+                    {formatDashNumber(set.reps, false)}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.sessionCell,
+                      styles.colRpe,
+                      { color: palette.text },
+                    ]}
+                  >
+                    {formatRpe(set.rpe)}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          ))}
         </View>
+      ) : null}
 
-        <View style={styles.metricBlock}>
-          <Text style={[styles.metricLabel, { color: palette.icon }]}>
-            Reps (best set)
-          </Text>
-          <View style={styles.metricValues}>
-            <Text style={[styles.metricMain, { color: palette.text }]}>
-              {formatDashNumber(progression.repsFirst, false)} →{" "}
-              {formatDashNumber(progression.repsLast, false)}
+      {detailView === "topSet" ? (
+        <View style={[styles.summary, { borderTopColor: summaryDivider }]}>
+          <ThemedText type="defaultSemiBold" style={styles.summaryTitle}>
+            Previous → latest
+          </ThemedText>
+
+          <View style={styles.metricBlock}>
+            <Text style={[styles.metricLabel, { color: palette.icon }]}>
+              Weight (kg)
             </Text>
-            <Text
-              style={[
-                styles.metricDelta,
-                { color: repsDeltaColor },
-              ]}
-            >
-              Δ {formatDelta(progression.repsDelta, false)}
-            </Text>
+            <View style={styles.metricValues}>
+              <Text style={[styles.metricMain, { color: palette.text }]}>
+                {formatDashNumber(progression.weightPrev, true)} →{" "}
+                {formatDashNumber(progression.weightLast, true)}
+              </Text>
+              <Text style={[styles.metricDelta, { color: weightDeltaColor }]}>
+                Δ {formatDelta(progression.weightDelta, true)}
+              </Text>
+            </View>
           </View>
-        </View>
-      </View>
 
-      {needsMoreSessions ? (
+          <View style={styles.metricBlock}>
+            <Text style={[styles.metricLabel, { color: palette.icon }]}>
+              Reps (top set)
+            </Text>
+            <View style={styles.metricValues}>
+              <Text style={[styles.metricMain, { color: palette.text }]}>
+                {formatDashNumber(progression.repsPrev, false)} →{" "}
+                {formatDashNumber(progression.repsLast, false)}
+              </Text>
+              <Text style={[styles.metricDelta, { color: repsDeltaColor }]}>
+                Δ {formatDelta(progression.repsDelta, false)}
+              </Text>
+            </View>
+          </View>
+
+          {showRpeTieBreak ? (
+            <View style={styles.metricBlock}>
+              <Text style={[styles.metricLabel, { color: palette.icon }]}>
+                RPE (top set)
+              </Text>
+              <View style={styles.metricValues}>
+                <Text style={[styles.metricMain, { color: palette.text }]}>
+                  {formatRpe(progression.rpePrev)} →{" "}
+                  {formatRpe(progression.rpeLast)}
+                </Text>
+                <Text style={[styles.metricDelta, { color: rpeDColor }]}>
+                  Δ {formatRpeDelta(progression.rpeDelta)}
+                </Text>
+              </View>
+            </View>
+          ) : null}
+        </View>
+      ) : null}
+
+      {detailView === "topSet" ? (
+        needsMoreSessions ? (
+          <ThemedText style={styles.hint}>
+            Log this day again to compare your latest top set to the previous
+            workout.
+          </ThemedText>
+        ) : (
+          <ThemedText style={styles.hint}>
+            {progression.sessionsUsed} session
+            {progression.sessionsUsed === 1 ? "" : "s"} recorded. Δ is — when a
+            value is missing.
+          </ThemedText>
+        )
+      ) : detailView === "allSets" ? (
         <ThemedText style={styles.hint}>
-          Save this day twice in your history to see change from first to latest
-          session.
+          {progression.sessionsUsed} workout
+          {progression.sessionsUsed === 1 ? "" : "s"} with this exercise on this
+          day.
         </ThemedText>
       ) : (
         <ThemedText style={styles.hint}>
-          {progression.sessionsUsed} session
-          {progression.sessionsUsed === 1 ? "" : "s"} in your history. Δ is — when
-          the first or latest session is missing that field.
+          Top-set trend across {progression.sessionsUsed} session
+          {progression.sessionsUsed === 1 ? "" : "s"}.
         </ThemedText>
       )}
     </View>
@@ -235,23 +441,59 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     fontSize: 12,
   },
-  /** Same flex + widths on header and body so columns line up. */
   colDate: {
     flex: 1,
     minWidth: 0,
-    paddingRight: 8,
+    paddingRight: 6,
+  },
+  colSet: {
+    width: 36,
+    flexShrink: 0,
+    fontVariant: ["tabular-nums"],
   },
   colKg: {
-    width: 56,
+    width: 48,
     flexShrink: 0,
     textAlign: "right",
     fontVariant: ["tabular-nums"],
   },
   colReps: {
-    width: 48,
+    width: 40,
     flexShrink: 0,
     textAlign: "right",
     fontVariant: ["tabular-nums"],
+  },
+  colRpe: {
+    width: 44,
+    flexShrink: 0,
+    textAlign: "right",
+    fontVariant: ["tabular-nums"],
+  },
+  allSetsWrap: {
+    marginTop: 6,
+    gap: 10,
+  },
+  sessionBlock: {
+    borderWidth: 1,
+    borderRadius: 8,
+    overflow: "hidden",
+  },
+  sessionBlockTitle: {
+    fontSize: 13,
+    fontWeight: "700",
+    paddingHorizontal: 10,
+    paddingTop: 8,
+    paddingBottom: 4,
+  },
+  miniHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+  },
+  miniHead: {
+    fontWeight: "700",
+    fontSize: 11,
   },
   summary: {
     marginTop: 10,
@@ -283,7 +525,7 @@ const styles = StyleSheet.create({
     minWidth: 120,
   },
   metricDelta: {
-    fontSize: 17,
+    fontSize: 15,
     fontWeight: "900",
     fontVariant: ["tabular-nums"],
   },

@@ -5,11 +5,12 @@ import ParallaxScrollView from "@/components/parallax-scroll-view";
 import {
   ExerciseProgressCard,
   TrainingConsistencyHeatmap,
+  type ExerciseProgressCardView,
   type ProgressionDetailView,
 } from "@/components/analyze";
 import {
-  filterSessionsByPeriod,
   progressionForExercise,
+  sortWorkoutSessionsChronologically,
 } from "@/components/analyze/progression";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
@@ -20,9 +21,10 @@ import { Colors, tintColorLight } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 
 const PROGRESSION_VIEWS: { key: ProgressionDetailView; label: string }[] = [
-  { key: "table", label: "Table" },
-  { key: "graphs", label: "Graphs" },
-  { key: "consistency", label: "Consistency" },
+  { key: "topSet", label: "Top set" },
+  { key: "trend", label: "Trend" },
+  { key: "allSets", label: "All sets" },
+  { key: "activity", label: "Activity" },
 ];
 
 export default function AnalyzeScreen() {
@@ -31,7 +33,7 @@ export default function AnalyzeScreen() {
   const isDark = colorScheme === "dark";
   const { routines, workoutHistory, loading } = useRoutines();
   const [progressionDetailView, setProgressionDetailView] =
-    useState<ProgressionDetailView>("table");
+    useState<ProgressionDetailView>("topSet");
   const [routineId, setRoutineId] = useState<string | null>(null);
   const [day, setDay] = useState<Day | null>(null);
 
@@ -45,8 +47,8 @@ export default function AnalyzeScreen() {
     return selectedRoutine.exercisesByDay[day] ?? [];
   }, [day, selectedRoutine]);
 
-  const sessionsInPeriod = useMemo(
-    () => filterSessionsByPeriod(workoutHistory, "all"),
+  const sessionsSorted = useMemo(
+    () => sortWorkoutSessionsChronologically(workoutHistory),
     [workoutHistory]
   );
 
@@ -55,13 +57,13 @@ export default function AnalyzeScreen() {
     return exercisesForDay.map((exercise) => ({
       exercise,
       progression: progressionForExercise(
-        sessionsInPeriod,
+        sessionsSorted,
         routineId,
         day,
         exercise
       ),
     }));
-  }, [sessionsInPeriod, routineId, day, exercisesForDay]);
+  }, [sessionsSorted, routineId, day, exercisesForDay]);
 
   function selectRoutine(nextId: string) {
     setRoutineId(nextId);
@@ -146,8 +148,8 @@ export default function AnalyzeScreen() {
 
         {loading ? (
           <ThemedText>Loading history…</ThemedText>
-        ) : progressionDetailView === "consistency" ? (
-          <TrainingConsistencyHeatmap sessions={sessionsInPeriod} />
+        ) : progressionDetailView === "activity" ? (
+          <TrainingConsistencyHeatmap sessions={sessionsSorted} />
         ) : !selectedRoutine || !routineId || !day ? (
           <ThemedText>
             Select a routine and day above to view exercise progression.
@@ -159,7 +161,7 @@ export default function AnalyzeScreen() {
                 <ExerciseProgressCard
                   key={exercise}
                   progression={progression}
-                  detailView={progressionDetailView}
+                  detailView={progressionDetailView as ExerciseProgressCardView}
                 />
               ) : (
                 <ThemedView

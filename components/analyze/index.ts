@@ -5,13 +5,12 @@ export {
 export type { ProgressionDetailView } from "./progression-views";
 export { TrainingConsistencyHeatmap } from "./training-consistency-heatmap";
 export type {
-  AnalyzePeriod,
   ExerciseProgression,
+  SessionAllSetsRow,
   SessionMetricRow,
 } from "./progression";
 export {
-  filterSessionsByPeriod,
   progressionForExercise,
   progressionsForDay,
+  sortWorkoutSessionsChronologically,
 } from "./progression";
-

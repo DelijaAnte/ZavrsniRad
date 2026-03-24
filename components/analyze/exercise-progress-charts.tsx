@@ -78,7 +78,7 @@ export function ExerciseProgressCharts({
     <View style={styles.wrap}>
       {weightSeries ? (
         <View style={styles.chartBlock}>
-          <ThemedText style={styles.caption}>Weight (kg)</ThemedText>
+          <ThemedText style={styles.caption}>Weight (kg) — top set</ThemedText>
           <LineChart
             data={{
               labels: weightSeries.labels,
@@ -102,7 +102,7 @@ export function ExerciseProgressCharts({
 
       {repsSeries ? (
         <View style={styles.chartBlock}>
-          <ThemedText style={styles.caption}>Reps (best set)</ThemedText>
+          <ThemedText style={styles.caption}>Reps — top set</ThemedText>
           <LineChart
             data={{
               labels: repsSeries.labels,

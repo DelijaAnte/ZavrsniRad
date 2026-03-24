@@ -1,1 +1,1 @@
-export type ProgressionDetailView = "table" | "graphs" | "consistency";
+export type ProgressionDetailView = "topSet" | "trend" | "allSets" | "activity";
