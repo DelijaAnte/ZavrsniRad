@@ -183,59 +183,61 @@ export default function AnalyzeScreen() {
         onSelectDay={selectDay}
       />
 
-      <ThemedView style={styles.section}>
-        <ThemedText type="subtitle">Progression</ThemedText>
-        <ThemedText type="defaultSemiBold" style={styles.progressionViewTitle}>
-          View
-        </ThemedText>
-        <View style={styles.chipsRow}>
-          {PROGRESSION_VIEWS.map(({ key, label }) => {
-            const active = progressionDetailView === key;
-            return (
-              <TouchableOpacity
-                key={key}
-                accessibilityRole="button"
-                accessibilityState={{ selected: active }}
-                style={[
-                  styles.chip,
-                  {
-                    borderColor: active
-                      ? palette.tintBorder
-                      : isDark
-                        ? "#2f3638"
-                        : "#ddd",
-                    backgroundColor: active
-                      ? palette.tintMuted
-                      : isDark
-                        ? "#1e2224"
-                        : "#fff",
-                  },
-                ]}
-                onPress={() => setProgressionDetailView(key)}
-                activeOpacity={0.85}
-              >
-                <Text
+      {(loading || routines.length > 0) && (
+        <ThemedView style={styles.section}>
+          <ThemedText type="subtitle">Progression</ThemedText>
+          <ThemedText type="defaultSemiBold" style={styles.progressionViewTitle}>
+            View
+          </ThemedText>
+          <View style={styles.chipsRow}>
+            {PROGRESSION_VIEWS.map(({ key, label }) => {
+              const active = progressionDetailView === key;
+              return (
+                <TouchableOpacity
+                  key={key}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
                   style={[
-                    styles.chipText,
-                    active
-                      ? {
-                          color:
-                            colorScheme === "light"
-                              ? tintColorLight
-                              : palette.tint,
-                        }
-                      : { color: isDark ? palette.text : "#0c2f35" },
+                    styles.chip,
+                    {
+                      borderColor: active
+                        ? palette.tintBorder
+                        : isDark
+                          ? "#2f3638"
+                          : "#ddd",
+                      backgroundColor: active
+                        ? palette.tintMuted
+                        : isDark
+                          ? "#1e2224"
+                          : "#fff",
+                    },
                   ]}
+                  onPress={() => setProgressionDetailView(key)}
+                  activeOpacity={0.85}
                 >
-                  {label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+                  <Text
+                    style={[
+                      styles.chipText,
+                      active
+                        ? {
+                            color:
+                              colorScheme === "light"
+                                ? tintColorLight
+                                : palette.tint,
+                          }
+                        : { color: isDark ? palette.text : "#0c2f35" },
+                    ]}
+                  >
+                    {label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
 
-        {renderBody()}
-      </ThemedView>
+          {renderBody()}
+        </ThemedView>
+      )}
     </ParallaxScrollView>
   );
 }
