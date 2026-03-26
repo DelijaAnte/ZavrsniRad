@@ -17,14 +17,19 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
+
+import { setAppLanguage, type AppLanguage } from "@/i18next/i18next";
 
 const GITHUB_REPO_URL = "https://github.com/DelijaAnte/ZavrsniRad";
 
 export default function ProfileScreen() {
   const { session, initialized, signOut, deleteAccount } = useAuth();
   const colorScheme = useColorScheme() ?? "light";
+  const { t, i18n } = useTranslation();
   const isLight = colorScheme === "light";
   const tint = Colors[colorScheme].tint;
+  const currentLanguage: AppLanguage = i18n.language === "hr" ? "hr" : "en";
   const [deletingAccount, setDeletingAccount] = useState(false);
   const mountedRef = useRef(true);
   const { height: windowHeight } = useWindowDimensions();
@@ -66,12 +71,12 @@ export default function ProfileScreen() {
 
   function confirmDeleteAccount() {
     Alert.alert(
-      "Delete account",
-      "This permanently removes your account and training data. This cannot be undone.",
+      t("profile.deleteAccountTitle"),
+      t("profile.deleteAccountMessage"),
       [
-        { text: "Cancel", style: "cancel" },
+        { text: t("common.cancel"), style: "cancel" },
         {
-          text: "Delete",
+          text: t("common.delete"),
           style: "destructive",
           onPress: () => {
             void (async () => {
@@ -80,7 +85,7 @@ export default function ProfileScreen() {
               if (!mountedRef.current) return;
               setDeletingAccount(false);
               if (error) {
-                Alert.alert("Could not delete account", error.message);
+                Alert.alert(t("common.error"), error.message);
               }
             })();
           },
@@ -93,19 +98,25 @@ export default function ProfileScreen() {
     try {
       const supported = await Linking.canOpenURL(GITHUB_REPO_URL);
       if (!supported) {
-        Alert.alert("Cannot open link", "This device cannot open the project URL.");
+        Alert.alert(
+          t("common.cannotOpenLink"),
+          t("profile.cannotOpenGitHubMessage")
+        );
         return;
       }
       await Linking.openURL(GITHUB_REPO_URL);
     } catch {
-      Alert.alert("Cannot open link", "Something went wrong opening the browser.");
+      Alert.alert(
+        t("common.cannotOpenLink"),
+        t("profile.cannotOpenGitHubBrowserMessage")
+      );
     }
   }
 
   async function handleSignOut() {
     const { error } = await signOut();
     if (error) {
-      Alert.alert("Could not sign out", error.message);
+      Alert.alert(t("common.couldNotSignOut"), error.message);
     }
   }
 
@@ -121,14 +132,14 @@ export default function ProfileScreen() {
       <View style={styles.pageColumn}>
         <ThemedView style={styles.headerRow}>
           <View style={styles.headerTitles}>
-            <ThemedText type="title">Profile</ThemedText>
+            <ThemedText type="title">{t("profile.title")}</ThemedText>
           </View>
         </ThemedView>
 
         {!initialized ? (
           <View style={styles.loadingFill}>
             <ActivityIndicator color={tint} />
-            <ThemedText>Loading…</ThemedText>
+            <ThemedText>{t("common.loading")}</ThemedText>
           </View>
         ) : (
           <View
@@ -138,6 +149,61 @@ export default function ProfileScreen() {
             ]}
           >
             <View style={styles.topBlock}>
+              <View style={styles.languageBlock}>
+                <ThemedText type="defaultSemiBold" style={styles.languageLabel}>
+                  {t("profile.language")}
+                </ThemedText>
+                <View style={styles.languageRow}>
+                  <TouchableOpacity
+                    accessibilityRole="button"
+                    accessibilityLabel={t("language.en")}
+                    onPress={() => void setAppLanguage("en")}
+                    style={[
+                      styles.languageButton,
+                      { borderColor: palette.divider, backgroundColor: palette.cardBg },
+                      currentLanguage === "en" && {
+                        borderColor: tintColorLight,
+                        backgroundColor: tintColorLight,
+                      },
+                    ]}
+                    activeOpacity={0.85}
+                  >
+                    <Text
+                      style={[
+                        styles.languageButtonText,
+                        currentLanguage === "en" && { color: "#fff" },
+                      ]}
+                    >
+                      {t("language.en")}
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    accessibilityRole="button"
+                    accessibilityLabel={t("language.hr")}
+                    onPress={() => void setAppLanguage("hr")}
+                    style={[
+                      styles.languageButton,
+                      { borderColor: palette.divider, backgroundColor: palette.cardBg },
+                      currentLanguage === "hr" && {
+                        borderColor: tintColorLight,
+                        backgroundColor: tintColorLight,
+                      },
+                    ]}
+                    activeOpacity={0.85}
+                  >
+                    <Text
+                      style={[
+                        styles.languageButtonText,
+                        currentLanguage === "hr" && { color: "#fff" },
+                      ]}
+                    >
+                      {t("language.hr")}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
               <TouchableOpacity
                 style={[styles.infoCard, { backgroundColor: palette.cardBg }]}
                 activeOpacity={email ? 0.85 : 1}
@@ -154,9 +220,11 @@ export default function ProfileScreen() {
                   <Ionicons name="mail-outline" size={22} color={tintColorLight} />
                 </View>
                 <View style={styles.infoTextBlock}>
-                  <Text style={[styles.infoLabel, { color: palette.label }]}>Email</Text>
+                  <Text style={[styles.infoLabel, { color: palette.label }]}>
+                    {t("profile.emailLabel")}
+                  </Text>
                   <Text style={[styles.infoValue, { color: palette.primaryText }]}>
-                    {email ?? "Not signed in"}
+                    {email ?? t("profile.notSignedIn")}
                   </Text>
                 </View>
               </TouchableOpacity>
@@ -164,7 +232,7 @@ export default function ProfileScreen() {
               <TouchableOpacity
                 style={[styles.infoCard, { backgroundColor: palette.cardBg }]}
                 accessibilityRole="button"
-                accessibilityLabel="View source code on GitHub"
+                accessibilityLabel={t("profile.viewSourceCodeAccessibilityLabel")}
                 onPress={() => void openGitHub()}
                 activeOpacity={0.85}
               >
@@ -175,10 +243,10 @@ export default function ProfileScreen() {
                 </View>
                 <View style={styles.infoTextBlock}>
                   <Text style={[styles.infoLabel, { color: palette.label }]}>
-                    Source Code
+                    {t("profile.sourceCode")}
                   </Text>
                   <Text style={[styles.infoValue, { color: palette.primaryText }]}>
-                    View on GitHub
+                    {t("profile.viewOnGitHub")}
                   </Text>
                 </View>
               </TouchableOpacity>
@@ -189,7 +257,7 @@ export default function ProfileScreen() {
             <View style={styles.bottomBlock}>
               <TouchableOpacity
                 accessibilityRole="button"
-                accessibilityLabel="Sign out"
+                accessibilityLabel={t("profile.signOut")}
                 style={[
                   styles.actionButton,
                   {
@@ -203,13 +271,13 @@ export default function ProfileScreen() {
               >
                 <Ionicons name="log-out-outline" size={22} color={palette.primaryText} />
                 <Text style={[styles.actionButtonTextBold, { color: palette.primaryText }]}>
-                  Sign Out
+                  {t("profile.signOut")}
                 </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 accessibilityRole="button"
-                accessibilityLabel="Delete account"
+                accessibilityLabel={t("profile.deleteAccount")}
                 style={[
                   styles.actionButton,
                   {
@@ -227,7 +295,7 @@ export default function ProfileScreen() {
                   <>
                     <Ionicons name="trash-outline" size={22} color={palette.deleteText} />
                     <Text style={[styles.actionButtonTextBold, { color: palette.deleteText }]}>
-                      Delete Account
+                      {t("profile.deleteAccount")}
                     </Text>
                   </>
                 )}
@@ -324,5 +392,29 @@ const styles = StyleSheet.create({
   actionButtonTextBold: {
     fontSize: 16,
     fontWeight: "700",
+  },
+  languageBlock: {
+    gap: 10,
+  },
+  languageLabel: {
+    marginBottom: 2,
+  },
+  languageRow: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  languageButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  languageButtonText: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#0c2f35",
   },
 });

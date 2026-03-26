@@ -1,5 +1,6 @@
 import { Tabs } from "expo-router";
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 import { HapticTab } from "@/components/haptic-tab";
 import { IconSymbol } from "@/components/ui/icon-symbol";
@@ -8,6 +9,7 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const { t } = useTranslation();
 
   const scheme = colorScheme ?? "light";
 
@@ -32,7 +34,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="plan"
         options={{
-          title: "Plan",
+          title: t("tabs.plan"),
           tabBarIcon: ({ color }) => (
             <IconSymbol size={28} name="calendar" color={color} />
           ),
@@ -41,7 +43,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="train"
         options={{
-          title: "Train",
+          title: t("tabs.train"),
           tabBarIcon: ({ color }) => (
             <IconSymbol size={28} name="dumbbell.fill" color={color} />
           ),
@@ -50,7 +52,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="analyze"
         options={{
-          title: "Analyze",
+          title: t("tabs.analyze"),
           tabBarIcon: ({ color }) => (
             <IconSymbol size={28} name="chart.bar.fill" color={color} />
           ),
@@ -59,7 +61,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: "Profile",
+          title: t("tabs.profile"),
           tabBarIcon: ({ color }) => (
             <IconSymbol size={28} name="person.circle.fill" color={color} />
           ),

@@ -6,6 +6,7 @@ import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { Colors, tintColorLight } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   routines: Routine[];
@@ -22,6 +23,7 @@ export function RoutineDayPicker({
   onSelectRoutine,
   onSelectDay,
 }: Props) {
+  const { t } = useTranslation();
   const colorScheme = useColorScheme() ?? "light";
   const palette = Colors[colorScheme];
   const isDark = colorScheme === "dark";
@@ -31,7 +33,7 @@ export function RoutineDayPicker({
   return (
     <>
       <ThemedView style={styles.section}>
-        <ThemedText type="subtitle">Routine</ThemedText>
+        <ThemedText type="subtitle">{t("routineDayPicker.routineSubtitle")}</ThemedText>
         {routines.length ? (
           <View style={styles.chipsRow}>
             {routines.map((r) => {
@@ -86,15 +88,15 @@ export function RoutineDayPicker({
               },
             ]}
           >
-            <ThemedText type="defaultSemiBold">No routines yet</ThemedText>
-            <ThemedText>Create a routine in the Plan tab first.</ThemedText>
+            <ThemedText type="defaultSemiBold">{t("routineDayPicker.noRoutinesYet")}</ThemedText>
+            <ThemedText>{t("routineDayPicker.createRoutineFirst")}</ThemedText>
           </ThemedView>
         )}
       </ThemedView>
 
       {selectedRoutine ? (
         <ThemedView style={styles.section}>
-          <ThemedText type="subtitle">Day</ThemedText>
+          <ThemedText type="subtitle">{t("routineDayPicker.daySubtitle")}</ThemedText>
           {availableDays.length ? (
             <View style={styles.chipsRow}>
               {availableDays.map((d) => {
@@ -133,14 +135,14 @@ export function RoutineDayPicker({
                           : { color: isDark ? palette.text : "#0c2f35" },
                       ]}
                     >
-                      {d}
+                      {t(`days.short.${d}`)}
                     </Text>
                   </TouchableOpacity>
                 );
               })}
             </View>
           ) : (
-            <ThemedText>This routine has no days selected.</ThemedText>
+            <ThemedText>{t("routineDayPicker.noDaysSelected")}</ThemedText>
           )}
         </ThemedView>
       ) : null}

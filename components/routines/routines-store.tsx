@@ -47,6 +47,10 @@ function newSessionId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
+function hasAnyArrayEntries(value: unknown): boolean {
+  return Array.isArray(value) && value.length > 0;
+}
+
 export function RoutinesProvider({ children }: { children: React.ReactNode }) {
   const { session } = useAuth();
   const userId = session?.user?.id ?? null;
@@ -129,6 +133,24 @@ export function RoutinesProvider({ children }: { children: React.ReactNode }) {
 
       const nextRoutines = sanitizeRoutines(data?.routines);
       const nextHistory = sanitizeWorkoutHistory(data?.workout_history);
+
+      // Safety: if the backend contains data but our parser can't read it,
+      // do NOT proceed with a state that could later overwrite remote with empty arrays.
+      const backendHadRoutines = hasAnyArrayEntries(data?.routines);
+      const backendHadHistory = hasAnyArrayEntries(data?.workout_history);
+      if (
+        (backendHadRoutines && nextRoutines.length === 0) ||
+        (backendHadHistory && nextHistory.length === 0)
+      ) {
+        setError(
+          "Your saved training data could not be loaded (format mismatch). " +
+            "To prevent data loss, syncing is paused."
+        );
+        setLoading(false);
+        setHydrated(true);
+        skipNextPersistRef.current = true;
+        return;
+      }
 
       setRoutines(nextRoutines);
       setWorkoutHistory(nextHistory);

@@ -12,6 +12,7 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import { useTranslation } from "react-i18next";
 
 import { ThemedText } from "@/components/themed-text";
 import type { Day, Routine } from "@/components/routines/types";
@@ -119,6 +120,7 @@ export function RoutineModal({
   initialRoutine: Routine | null;
   onSave: (routine: Routine) => void;
 }) {
+  const { t } = useTranslation();
   const colorScheme = useColorScheme() ?? "light";
   const palette = Colors[colorScheme];
   const isDark = colorScheme === "dark";
@@ -138,6 +140,9 @@ export function RoutineModal({
   const [draft, dispatch] = useReducer(routineModalReducer, undefined, emptyDraft);
 
   const { name, selectedDays, activeDay, exerciseText, exercisesByDay } = draft;
+
+  const formatDay = (day: Day) => t(`days.short.${day}`);
+  const activeDayLabel = activeDay ? formatDay(activeDay) : "";
 
   const canSubmit = useMemo(() => {
     return name.trim().length > 0 && selectedDays.length > 0;
@@ -204,8 +209,8 @@ export function RoutineModal({
     const list = exercisesByDay[activeDay] ?? [];
     if (list.some((ex) => ex.trim().toLowerCase() === txt.toLowerCase())) {
       Alert.alert(
-        "Duplicate exercise",
-        "That exercise is already listed for this day. Use a different name or remove the duplicate first."
+        t("routineModal.duplicateExerciseTitle"),
+        t("routineModal.duplicateExerciseMessage")
       );
       return;
     }
@@ -248,7 +253,7 @@ export function RoutineModal({
         <Pressable
           style={styles.modalBackdrop}
           onPress={close}
-          accessibilityLabel="Dismiss"
+          accessibilityLabel={t("routineModal.dismiss")}
           accessibilityRole="button"
         />
         <View
@@ -276,7 +281,7 @@ export function RoutineModal({
             extraKeyboardSpace={20}
           >
             <ThemedText type="subtitle" style={{ marginBottom: 8 }}>
-              {mode === "edit" ? "Edit routine" : "New routine"}
+              {mode === "edit" ? t("routineModal.editRoutineTitle") : t("routineModal.newRoutineTitle")}
             </ThemedText>
             <View
               style={{
@@ -286,10 +291,10 @@ export function RoutineModal({
                 marginBottom: 4,
               }}
             >
-              <ThemedText type="defaultSemiBold">Name</ThemedText>
+              <ThemedText type="defaultSemiBold">{t("routineModal.nameLabel")}</ThemedText>
               <TouchableOpacity
                 accessibilityRole="button"
-                accessibilityLabel="Close"
+                accessibilityLabel={t("routineModal.closeAccessibilityLabel")}
                 onPress={close}
                 style={[
                   styles.iconButton,
@@ -303,7 +308,7 @@ export function RoutineModal({
             </View>
 
             <TextInput
-              placeholder="e.g. Upper body split"
+              placeholder={t("routineModal.routineNamePlaceholder")}
               placeholderTextColor={palette.icon}
               value={name}
               onChangeText={(v) => dispatch({ type: "setName", name: v })}
@@ -315,11 +320,11 @@ export function RoutineModal({
                   color: palette.text,
                 },
               ]}
-              accessibilityLabel="Routine name"
+              accessibilityLabel={t("routineModal.routineNameAccessibilityLabel")}
               returnKeyType="done"
             />
 
-            <ThemedText type="defaultSemiBold">Days</ThemedText>
+            <ThemedText type="defaultSemiBold">{t("routineModal.daysLabel")}</ThemedText>
             <View style={styles.chipsRow}>
               {DAYS.map((d) => {
                 const active = selectedDays.includes(d);
@@ -340,18 +345,18 @@ export function RoutineModal({
                         { color: active ? activeChipLabelColor : palette.text },
                       ]}
                     >
-                      {d}
+                    {formatDay(d)}
                     </Text>
                   </TouchableOpacity>
                 );
               })}
             </View>
 
-            <ThemedText type="defaultSemiBold">Exercises by day</ThemedText>
+            <ThemedText type="defaultSemiBold">{t("routineModal.exercisesByDayLabel")}</ThemedText>
             {selectedDays.length ? (
               <>
                 <ThemedText style={{ marginTop: 6 }}>
-                  Pick a day, then add exercises for that day.
+                  {t("routineModal.pickDayInstruction")}
                 </ThemedText>
                 <View style={[styles.chipsRow, { marginTop: 10 }]}>
                   {selectedDays.map((d) => {
@@ -377,7 +382,7 @@ export function RoutineModal({
                             },
                           ]}
                         >
-                          {d}
+                          {formatDay(d)}
                         </Text>
                       </TouchableOpacity>
                     );
@@ -438,19 +443,21 @@ export function RoutineModal({
                       </View>
                     ) : (
                       <ThemedText style={{ marginTop: 8 }}>
-                        No exercises for {activeDay} yet.
+                        {t("routineModal.noExercisesForActiveDayYet", {
+                          activeDay: activeDayLabel,
+                        })}
                       </ThemedText>
                     )}
                   </>
                 ) : (
                   <ThemedText style={{ marginTop: 8 }}>
-                    Select a day to add exercises.
+                    {t("routineModal.selectDayToAddExercises")}
                   </ThemedText>
                 )}
               </>
             ) : (
               <ThemedText style={{ marginTop: 8 }}>
-                Select at least one day first.
+                {t("routineModal.selectAtLeastOneDayFirst")}
               </ThemedText>
             )}
 
@@ -458,8 +465,10 @@ export function RoutineModal({
               <TextInput
                 placeholder={
                   activeDay
-                    ? `Add exercise for ${activeDay} (e.g. Bench Press 3x8)`
-                    : "Select a day above"
+                  ? t("routineModal.addExercisePlaceholderForDay", {
+                      activeDay: activeDayLabel,
+                    })
+                  : t("routineModal.selectDayAbovePlaceholder")
                 }
                 placeholderTextColor={palette.icon}
                 value={exerciseText}
@@ -487,7 +496,7 @@ export function RoutineModal({
                 activeOpacity={0.85}
                 disabled={!activeDay}
               >
-                <Text style={styles.addButtonText}>Add</Text>
+              <Text style={styles.addButtonText}>{t("routineModal.addButton")}</Text>
               </TouchableOpacity>
             </View>
 
@@ -506,7 +515,7 @@ export function RoutineModal({
                 <Text
                   style={[styles.secondaryButtonText, { color: palette.text }]}
                 >
-                  Cancel
+                  {t("common.cancel")}
                 </Text>
               </TouchableOpacity>
 
@@ -521,7 +530,9 @@ export function RoutineModal({
                 activeOpacity={0.85}
               >
                 <Text style={styles.primaryButtonText}>
-                  {mode === "edit" ? "Save changes" : "Create"}
+                  {mode === "edit"
+                    ? t("routineModal.saveChangesButton")
+                    : t("routineModal.createButton")}
                 </Text>
               </TouchableOpacity>
             </View>

@@ -5,6 +5,10 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import "react-native-reanimated";
 
+import { I18nextProvider } from "react-i18next";
+
+import i18n from "@/i18next/i18next";
+
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { RoutinesProvider } from "@/components/routines/routines-store";
@@ -68,14 +72,16 @@ function RootNavigator() {
 
 export default function RootLayout() {
   return (
-    <KeyboardProvider>
-      <SafeAreaProvider>
-        <AuthProvider>
-          <RoutinesProvider>
-            <RootNavigator />
-          </RoutinesProvider>
-        </AuthProvider>
-      </SafeAreaProvider>
-    </KeyboardProvider>
+    <I18nextProvider i18n={i18n}>
+      <KeyboardProvider>
+        <SafeAreaProvider>
+          <AuthProvider>
+            <RoutinesProvider>
+              <RootNavigator />
+            </RoutinesProvider>
+          </AuthProvider>
+        </SafeAreaProvider>
+      </KeyboardProvider>
+    </I18nextProvider>
   );
 }

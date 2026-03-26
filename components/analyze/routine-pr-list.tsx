@@ -5,6 +5,7 @@ import type { ExercisePersonalRecord } from "@/components/analyze/pr";
 import { ThemedText } from "@/components/themed-text";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useTranslation } from "react-i18next";
 
 function formatKg(value: number): string {
   return Number.isInteger(value) ? `${value}` : value.toFixed(1);
@@ -28,6 +29,7 @@ export function RoutinePRList({
   const colorScheme = useColorScheme() ?? "light";
   const palette = Colors[colorScheme];
   const isDark = colorScheme === "dark";
+  const { t } = useTranslation();
   const cardBg = isDark ? "#1e2224" : "#fff";
   const cardBorder = isDark ? "#2f3638" : "#eee";
 
@@ -48,7 +50,7 @@ export function RoutinePRList({
                 {formatKg(record.kg)} kg × {record.reps} reps
               </Text>
               <Text style={[styles.meta, { color: palette.icon }]}>
-                {formatShortDate(record.performedAt)} · {record.day}
+                {formatShortDate(record.performedAt)} · {t(`days.short.${record.day}`)}
                 {record.rpe != null ? ` · RPE ${record.rpe}` : ""}
               </Text>
             </>

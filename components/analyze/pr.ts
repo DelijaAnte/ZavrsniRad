@@ -50,7 +50,7 @@ export function personalRecordForExercise(
   let bestTime = 0;
   let bestRpe: number | null = null;
   let bestAt = "";
-  let bestDay: Day = "Mon";
+  let bestDay: Day = "mon";
   let found = false;
 
   for (const s of sessionsSorted) {

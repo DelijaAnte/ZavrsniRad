@@ -4,6 +4,32 @@ import type { ExerciseLog, SetEntry } from "@/components/train/types";
 
 const DAY_SET = new Set<string>(DAYS);
 
+// Backwards compatibility for older stored routines/workouts using English day names.
+const LEGACY_DAY_MAP: Record<string, string> = {
+  Mon: "mon",
+  Tue: "tue",
+  Wed: "wed",
+  Thu: "thu",
+  Fri: "fri",
+  Sat: "sat",
+  Sun: "sun",
+};
+
+function normalizeDay(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  if (!value.trim()) return null;
+  const trimmed = value.trim();
+  if (DAY_SET.has(trimmed)) return trimmed;
+  const legacy = LEGACY_DAY_MAP[trimmed];
+  if (legacy) return legacy;
+  // Also allow case-insensitive legacy inputs.
+  const legacyCI = LEGACY_DAY_MAP[
+    trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase()
+  ];
+  if (legacyCI) return legacyCI;
+  return null;
+}
+
 function emptyExercisesByDay(): Record<Day, string[]> {
   const out = {} as Record<Day, string[]>;
   for (const d of DAYS) out[d] = [];
@@ -47,7 +73,8 @@ export function parseRoutine(value: unknown): Routine | null {
 
   const days: Day[] = [];
   for (const d of r.days) {
-    if (typeof d === "string" && DAY_SET.has(d)) days.push(d as Day);
+    const normalized = normalizeDay(d);
+    if (normalized && DAY_SET.has(normalized)) days.push(normalized as Day);
   }
   if (r.days.length > 0 && days.length !== r.days.length) return null;
 
@@ -77,14 +104,15 @@ export function parseWorkoutSession(value: unknown): WorkoutSession | null {
   const s = value as Record<string, unknown>;
   if (typeof s.id !== "string" || !s.id.trim()) return null;
   if (typeof s.routineId !== "string" || !s.routineId.trim()) return null;
-  if (typeof s.day !== "string" || !DAY_SET.has(s.day)) return null;
+  const normalizedDay = normalizeDay(s.day);
+  if (!normalizedDay || !DAY_SET.has(normalizedDay)) return null;
   if (typeof s.performedAt !== "string") return null;
 
   const log = sanitizeExerciseLog(s.log);
   return {
     id: s.id.trim(),
     routineId: s.routineId.trim(),
-    day: s.day as Day,
+    day: normalizedDay as Day,
     performedAt: s.performedAt,
     log,
   };

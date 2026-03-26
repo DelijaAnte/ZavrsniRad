@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import type { SetEntry } from "@/components/train/types";
 import { ThemedText } from "@/components/themed-text";
@@ -32,6 +33,7 @@ export function ExerciseLogCard({
   onRemoveSet,
   onUpdateSet,
 }: Props) {
+  const { t } = useTranslation();
   const colorScheme = useColorScheme() ?? "light";
   const palette = Colors[colorScheme];
   const isDark = colorScheme === "dark";
@@ -61,7 +63,7 @@ export function ExerciseLogCard({
                 { color: mutedLabel },
               ]}
             >
-              kg
+              {t("train.setColumns.kg")}
             </Text>
             <Text
               style={[
@@ -70,7 +72,7 @@ export function ExerciseLogCard({
                 { color: mutedLabel },
               ]}
             >
-              Reps
+              {t("train.setColumns.reps")}
             </Text>
             <Text
               style={[
@@ -79,7 +81,7 @@ export function ExerciseLogCard({
                 { color: mutedLabel },
               ]}
             >
-              RPE
+              {t("train.setColumns.rpe")}
             </Text>
             <View style={styles.removeButtonPlaceholder} />
           </View>
@@ -168,7 +170,7 @@ export function ExerciseLogCard({
                           { color: mutedLabel },
                         ]}
                       >
-                        Last session:
+                        {t("train.lastSessionLabel")}
                       </Text>
                     </View>
                     <Text
@@ -206,7 +208,9 @@ export function ExerciseLogCard({
           })}
         </View>
       ) : (
-        <ThemedText style={styles.noSets}>Add your first set.</ThemedText>
+        <ThemedText style={styles.noSets}>
+          {t("train.addFirstSetHint")}
+        </ThemedText>
       )}
 
       <View style={styles.actions}>
@@ -215,7 +219,7 @@ export function ExerciseLogCard({
           style={styles.addButton}
           activeOpacity={0.85}
         >
-          <Text style={styles.addButtonText}>+ Set</Text>
+          <Text style={styles.addButtonText}>{t("train.addSetButton")}</Text>
         </TouchableOpacity>
       </View>
     </View>

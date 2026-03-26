@@ -1,0 +1,203 @@
+const en = {
+  translation: {
+    common: {
+      loading: "Loading…",
+      saving: "Saving…",
+      cancel: "Cancel",
+      delete: "Delete",
+      error: "Error",
+      cannotOpenLink: "Cannot open link",
+      couldNotSignOut: "Could not sign out",
+    },
+    tabs: {
+      plan: "Plan",
+      train: "Train",
+      analyze: "Analyze",
+      profile: "Profile",
+    },
+    language: {
+      en: "English",
+      hr: "Croatian",
+    },
+    days: {
+      short: {
+        mon: "mon",
+        tue: "tue",
+        wed: "wed",
+        thu: "thu",
+        fri: "fri",
+        sat: "sat",
+        sun: "sun",
+      },
+    },
+    auth: {
+      needAccountPrefix: "Need an account? ",
+      signUp: "Sign up",
+      alreadyHaveAccountPrefix: "Already have an account? ",
+      signIn: "Sign in",
+      emailPlaceholder: "Email",
+      passwordPlaceholder: "Password",
+      enterEmailAndPassword: "Enter email and password.",
+      checkEmailAndSignIn:
+        "Check your email to confirm your account, then sign in.",
+      somethingWentWrong: "Something went wrong. Try again.",
+      couldNotRestoreSession: "Could not restore session",
+    },
+    profile: {
+      title: "Profile",
+      language: "Language",
+      emailLabel: "Email",
+      notSignedIn: "Not signed in",
+      sourceCode: "Source Code",
+      viewOnGitHub: "View on GitHub",
+      viewSourceCodeAccessibilityLabel: "View source code on GitHub",
+      signOut: "Sign Out",
+      deleteAccount: "Delete account",
+      deleteAccountTitle: "Delete account",
+      deleteAccountMessage:
+        "This permanently removes your account and training data. This cannot be undone.",
+      cannotOpenGitHubMessage: "This device cannot open the project URL.",
+      cannotOpenGitHubBrowserMessage:
+        "Something went wrong opening the browser.",
+    },
+    plan: {
+      title: "Plan",
+      createRoutineAccessibilityLabel: "Create routine",
+      couldNotSyncData: "Could not sync data",
+      loadingPlans: "Loading your plans…",
+      saving: "Saving…",
+      noRoutinesYet: "No routines yet",
+      tapPlusToCreateFirstRoutine: "Tap the + button to create your first routine.",
+      deleteRoutineTitle: "Delete routine",
+      deleteRoutineMessage:
+        'Remove "{{name}}"? Workout history for this routine will also be removed.',
+    },
+    train: {
+      title: "Train",
+      exercisesSubtitle: "Exercises",
+      noExercisesForDay: "No exercises for {{day}}",
+      saveSessionAccessibilityLabel: "Save workout session",
+      saveSession: "Save session",
+      couldNotSave: "Could not save",
+      savedTitle: "Saved",
+      savedMessage: "This session was saved to your account.",
+      setColumns: {
+        kg: "kg",
+        reps: "Reps",
+        rpe: "RPE",
+      },
+      lastSessionLabel: "Last session:",
+      addFirstSetHint: "Add your first set.",
+      addSetButton: "+ Set",
+    },
+    analyze: {
+      title: "Analyze",
+      loadingHistory: "Loading history…",
+      progressionSubtitle: "Progression",
+      viewLabel: "View",
+      selectRoutineForActivity:
+        "Select a routine above to see activity for that program.",
+      activity: {
+        dataSubtitle: "Days you logged a workout for this routine.",
+        emptyHint:
+          "No workouts saved for this routine yet. Log a session on the Train tab.",
+      },
+      selectRoutineForPr:
+        "Select a routine above to see personal records.",
+      noExercisesInRoutine: "No exercises in this routine.",
+      selectRoutineAndDayToViewProgression:
+        "Select a routine and day above to view exercise progression.",
+      noExercisesForDay: "No exercises for {{day}}",
+      noSavedSessionsForRoutineAndDay:
+        "No saved sessions for this routine and day.",
+      views: {
+        topSet: "Top set",
+        trend: "Trend",
+        allSets: "All sets",
+        pr: "PR",
+        activity: "Activity",
+      },
+      heatmap: {
+        title: "Activity",
+        month: "Month",
+      },
+      charts: {
+        weightCaption: "Weight (kg) — top set",
+        noWeightValues: "No weight values to chart.",
+        repsCaption: "Reps — top set",
+        noRepValues: "No rep values to chart.",
+      },
+      card: {
+        unitHintAllSets: "Every logged set per workout",
+        unitHintTopSet: "Top set (first set) per saved session on this day",
+        date: "Date",
+        kg: "kg",
+        reps: "reps",
+        rpe: "RPE",
+        set: "Set",
+        previousLatest: "Previous → latest",
+        weightKgLabel: "Weight (kg)",
+        repsTopSetLabel: "Reps (top set)",
+        rpeTopSetLabel: "RPE (top set)",
+        hintLogAgain:
+          "Log this day again to compare your latest top set to the previous workout.",
+        hintSessionsRecorded:
+          "{{sessionsUsed}} session(s) recorded. Δ is — when a value is missing.",
+        hintAllSets:
+          "{{sessionsUsed}} workout(s) with this exercise on this day.",
+        hintTopSetTrend:
+          "Top-set trend across {{sessionsUsed}} session(s).",
+      },
+    },
+    routineDayPicker: {
+      routineSubtitle: "Routine",
+      noRoutinesYet: "No routines yet",
+      createRoutineFirst: "Create a routine in the Plan tab first.",
+      daySubtitle: "Day",
+      noDaysSelected: "This routine has no days selected.",
+    },
+    routineCard: {
+      expand: "Expand",
+      collapse: "Collapse",
+      daySingular: "day",
+      dayPlural: "days",
+      exerciseSingular: "exercise",
+      exercisePlural: "exercises",
+      daysLabel: "Days",
+      exercisesLabel: "Exercises",
+      none: "None",
+      noExercises: "no exercises",
+      editAccessibilityPrefix: "Edit",
+      edit: "Edit",
+      deleteAccessibilityPrefix: "Delete",
+      delete: "Delete",
+    },
+    routineModal: {
+      dismiss: "Dismiss",
+      duplicateExerciseTitle: "Duplicate exercise",
+      duplicateExerciseMessage:
+        "That exercise is already listed for this day. Use a different name or remove the duplicate first.",
+      editRoutineTitle: "Edit routine",
+      newRoutineTitle: "New routine",
+      nameLabel: "Name",
+      closeAccessibilityLabel: "Close",
+      routineNamePlaceholder: "e.g. Upper body split",
+      routineNameAccessibilityLabel: "Routine name",
+      daysLabel: "Days",
+      exercisesByDayLabel: "Exercises by day",
+      pickDayInstruction: "Pick a day, then add exercises for that day.",
+      noExercisesForActiveDayYet: "No exercises for {{activeDay}} yet.",
+      selectDayToAddExercises: "Select a day to add exercises.",
+      selectAtLeastOneDayFirst: "Select at least one day first.",
+      addExercisePlaceholderForDay:
+        "Add exercise for {{activeDay}} (e.g. Bench Press 3x8)",
+      selectDayAbovePlaceholder: "Select a day above",
+      addButton: "Add",
+      saveChangesButton: "Save changes",
+      createButton: "Create",
+    },
+  },
+};
+
+export default en;
+export type TranslationKeys = keyof typeof en.translation;

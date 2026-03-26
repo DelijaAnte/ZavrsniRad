@@ -8,6 +8,7 @@ import {
   type StyleProp,
   type ViewStyle,
 } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { ThemedText } from "@/components/themed-text";
 import { Colors } from "@/constants/theme";
@@ -43,6 +44,7 @@ export function LoginForm({
   palette,
   colorScheme,
 }: LoginFormProps) {
+  const { t } = useTranslation();
   const inputSurface = colorScheme === "dark" ? "#1c1c1e" : "#f2f2f7";
 
   return (
@@ -64,7 +66,7 @@ export function LoginForm({
             backgroundColor: inputSurface,
           },
         ]}
-        placeholder="Email"
+        placeholder={t("auth.emailPlaceholder")}
         placeholderTextColor={palette.icon}
         autoCapitalize="none"
         autoCorrect={false}
@@ -81,7 +83,7 @@ export function LoginForm({
             backgroundColor: inputSurface,
           },
         ]}
-        placeholder="Password"
+        placeholder={t("auth.passwordPlaceholder")}
         placeholderTextColor={palette.icon}
         secureTextEntry
         value={password}
@@ -107,7 +109,7 @@ export function LoginForm({
               { color: colorScheme === "dark" ? "#111" : "#fff" },
             ]}
           >
-            {mode === "signIn" ? "Sign in" : "Sign up"}
+            {mode === "signIn" ? t("auth.signIn") : t("auth.signUp")}
           </ThemedText>
         )}
       </Pressable>

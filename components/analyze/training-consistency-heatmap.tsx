@@ -14,6 +14,7 @@ import type { WorkoutSession } from "@/components/routines/types";
 import { Colors, tintColorLight } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { hexToRgba } from "@/utils/hex-to-rgba";
+import { useTranslation } from "react-i18next";
 
 function startOfLocalDay(d: Date): Date {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
@@ -78,6 +79,7 @@ export function TrainingConsistencyHeatmap({
   /** Shown when there are no sessions in the given list. */
   emptyHint?: string;
 }) {
+  const { t } = useTranslation();
   const colorScheme = useColorScheme() ?? "light";
   const palette = Colors[colorScheme];
   const isDark = colorScheme === "dark";
@@ -249,7 +251,7 @@ export function TrainingConsistencyHeatmap({
 
   return (
     <View style={[styles.card, { backgroundColor: cardBg, borderColor: cardBorder }]}>
-      <ThemedText type="defaultSemiBold">Activity</ThemedText>
+      <ThemedText type="defaultSemiBold">{t("analyze.heatmap.title")}</ThemedText>
       {distinctDaysWithTraining > 0 ? (
         <ThemedText style={styles.muted}>{dataSubtitle}</ThemedText>
       ) : null}
@@ -261,7 +263,7 @@ export function TrainingConsistencyHeatmap({
           {availableMonths.length > 1 ? (
             <>
               <ThemedText type="defaultSemiBold" style={styles.monthPickerTitle}>
-                Month
+                {t("analyze.heatmap.month")}
               </ThemedText>
               <View style={styles.monthChips}>
                 {availableMonths.map((m) => {

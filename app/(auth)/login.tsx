@@ -11,11 +11,13 @@ import { ThemedView } from "@/components/themed-view";
 import { Colors } from "@/constants/theme";
 import { useAuth } from "@/context/auth-context";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useTranslation } from "react-i18next";
 
 export default function LoginScreen() {
   const colorScheme = useColorScheme() ?? "light";
   const palette = Colors[colorScheme];
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const { signIn, signUp, initError, clearInitError } = useAuth();
   const router = useRouter();
 
@@ -30,7 +32,7 @@ export default function LoginScreen() {
     clearInitError();
     const trimmed = email.trim();
     if (!trimmed || !password) {
-      setMessage("Enter email and password.");
+      setMessage(t("auth.enterEmailAndPassword"));
       return;
     }
     setLoading(true);
@@ -53,10 +55,10 @@ export default function LoginScreen() {
         router.replace("/(tabs)/plan");
         return;
       }
-      setMessage("Check your email to confirm your account, then sign in.");
+      setMessage(t("auth.checkEmailAndSignIn"));
       setMode("signIn");
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Something went wrong. Try again.";
+      const msg = e instanceof Error ? e.message : t("auth.somethingWentWrong");
       setMessage(msg);
     } finally {
       setLoading(false);
@@ -74,7 +76,7 @@ export default function LoginScreen() {
           {initError ? (
             <View style={[styles.initBanner, { borderColor: palette.icon }]}>
               <ThemedText type="defaultSemiBold" style={styles.initBannerTitle}>
-                Could not restore session
+                {t("auth.couldNotRestoreSession")}
               </ThemedText>
               <Text style={[styles.initBannerBody, { color: palette.text }]}>
                 {initError}

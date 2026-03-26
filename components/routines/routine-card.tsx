@@ -1,6 +1,7 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import React, { useMemo } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { ThemedText } from "@/components/themed-text";
 import type { Routine } from "@/components/routines/types";
@@ -23,6 +24,7 @@ export function RoutineCard({
   onEdit: (routine: Routine) => void;
   onDelete: (routine: Routine) => void;
 }) {
+  const { t } = useTranslation();
   const colorScheme = useColorScheme() ?? "light";
   const palette = Colors[colorScheme];
   const isDark = colorScheme === "dark";
@@ -61,7 +63,7 @@ export function RoutineCard({
         onPress={onToggleExpand}
         activeOpacity={0.85}
         accessibilityRole="button"
-        accessibilityLabel={`${expanded ? "Collapse" : "Expand"} ${routine.name}`}
+        accessibilityLabel={`${expanded ? t("routineCard.collapse") : t("routineCard.expand")} ${routine.name}`}
       >
         <View style={styles.routineHeader}>
           <ThemedText type="subtitle" style={styles.routineTitle} numberOfLines={3}>
@@ -72,14 +74,18 @@ export function RoutineCard({
               <Ionicons name="calendar-outline" size={18} color={metaColor} />
               <Text style={[styles.metaText, { color: metaColor }]}>
                 {routine.days.length}{" "}
-                {routine.days.length === 1 ? "day" : "days"}
+                {routine.days.length === 1
+                  ? t("routineCard.daySingular")
+                  : t("routineCard.dayPlural")}
               </Text>
             </View>
             <View style={styles.metaItem}>
               <Ionicons name="barbell-outline" size={18} color={metaColor} />
               <Text style={[styles.metaText, { color: metaColor }]}>
                 {totalExercises}{" "}
-                {totalExercises === 1 ? "exercise" : "exercises"}
+                {totalExercises === 1
+                  ? t("routineCard.exerciseSingular")
+                  : t("routineCard.exercisePlural")}
               </Text>
             </View>
           </View>
@@ -89,16 +95,22 @@ export function RoutineCard({
       {expanded ? (
         <>
           <View style={styles.routineBody}>
-            <ThemedText type="defaultSemiBold">Days</ThemedText>
-            <ThemedText>{routine.days.join(", ") || "None"}</ThemedText>
+            <ThemedText type="defaultSemiBold">{t("routineCard.daysLabel")}</ThemedText>
+            <ThemedText>
+              {routine.days.length
+                ? routine.days.map((d) => t(`days.short.${d}`)).join(", ")
+                : t("routineCard.none")}
+            </ThemedText>
 
-            <ThemedText type="defaultSemiBold">Exercises</ThemedText>
+            <ThemedText type="defaultSemiBold">{t("routineCard.exercisesLabel")}</ThemedText>
             {routine.days.length ? (
               routine.days.map((day) => {
                 const list = routine.exercisesByDay[day] ?? [];
                 return (
                   <View key={day} style={{ gap: 4 }}>
-                    <ThemedText style={styles.dayHeader}>{day}</ThemedText>
+                    <ThemedText style={styles.dayHeader}>
+                      {t(`days.short.${day}`)}
+                    </ThemedText>
                     {list.length ? (
                       list.map((ex, idx) => (
                         <ThemedText key={`${day}-${idx}-${ex}`}>
@@ -106,13 +118,13 @@ export function RoutineCard({
                         </ThemedText>
                       ))
                     ) : (
-                      <ThemedText>• (no exercises)</ThemedText>
+                      <ThemedText>• ({t("routineCard.noExercises")})</ThemedText>
                     )}
                   </View>
                 );
               })
             ) : (
-              <ThemedText>None</ThemedText>
+              <ThemedText>{t("routineCard.none")}</ThemedText>
             )}
           </View>
 
@@ -128,7 +140,7 @@ export function RoutineCard({
               onPress={() => onEdit(routine)}
               activeOpacity={0.85}
               accessibilityRole="button"
-              accessibilityLabel={`Edit ${routine.name}`}
+              accessibilityLabel={`${t("routineCard.editAccessibilityPrefix")} ${routine.name}`}
             >
               <Text
                 style={[
@@ -139,7 +151,7 @@ export function RoutineCard({
                   },
                 ]}
               >
-                Edit
+                {t("routineCard.edit")}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -147,9 +159,9 @@ export function RoutineCard({
               onPress={() => onDelete(routine)}
               activeOpacity={0.85}
               accessibilityRole="button"
-              accessibilityLabel={`Delete ${routine.name}`}
+              accessibilityLabel={`${t("routineCard.deleteAccessibilityPrefix")} ${routine.name}`}
             >
-              <Text style={styles.actionDangerText}>Delete</Text>
+              <Text style={styles.actionDangerText}>{t("routineCard.delete")}</Text>
             </TouchableOpacity>
           </View>
         </>

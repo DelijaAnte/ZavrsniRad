@@ -1,6 +1,8 @@
 import type { ExerciseLog } from "@/components/train/types";
 
-export const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
+// Stable internal identifiers for days of the week.
+// These are translated at render time using i18next (`days.short.*`).
+export const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
 export type Day = (typeof DAYS)[number];
 
 export type Routine = {

@@ -16,8 +16,10 @@ import { useRoutines } from "@/components/routines/routines-store";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { Colors, tintColorLight } from "@/constants/theme";
+import { useTranslation } from "react-i18next";
 
 export default function PlanScreen() {
+  const { t } = useTranslation();
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
   const [routineToEdit, setRoutineToEdit] = useState<Routine | null>(null);
@@ -53,12 +55,12 @@ export default function PlanScreen() {
 
   function confirmDelete(routine: Routine) {
     Alert.alert(
-      "Delete routine",
-      `Remove "${routine.name}"? Workout history for this routine will also be removed.`,
+      t("plan.deleteRoutineTitle"),
+      t("plan.deleteRoutineMessage", { name: routine.name }),
       [
-        { text: "Cancel", style: "cancel" },
+        { text: t("common.cancel"), style: "cancel" },
         {
-          text: "Delete",
+          text: t("common.delete"),
           style: "destructive",
           onPress: () => {
             deleteRoutine(routine.id);
@@ -86,11 +88,11 @@ export default function PlanScreen() {
     >
       <ThemedView style={styles.headerRow}>
         <View style={styles.headerTitles}>
-          <ThemedText type="title">Plan</ThemedText>
+          <ThemedText type="title">{t("plan.title")}</ThemedText>
         </View>
         <TouchableOpacity
           accessibilityRole="button"
-          accessibilityLabel="Create routine"
+          accessibilityLabel={t("plan.createRoutineAccessibilityLabel")}
           style={[
             styles.fabInline,
             { backgroundColor: tintColorLight },
@@ -106,7 +108,7 @@ export default function PlanScreen() {
 
       {error ? (
         <ThemedView style={styles.banner}>
-          <ThemedText type="defaultSemiBold">Could not sync data</ThemedText>
+          <ThemedText type="defaultSemiBold">{t("plan.couldNotSyncData")}</ThemedText>
           <ThemedText>{error}</ThemedText>
         </ThemedView>
       ) : null}
@@ -114,13 +116,13 @@ export default function PlanScreen() {
       {loading ? (
         <ThemedView style={styles.loadingRow}>
           <ActivityIndicator color={tintColorLight} />
-          <ThemedText>Loading your plans…</ThemedText>
+          <ThemedText>{t("plan.loadingPlans")}</ThemedText>
         </ThemedView>
       ) : null}
 
       {saving ? (
         <ThemedView style={styles.savingRow}>
-          <ThemedText type="defaultSemiBold">Saving…</ThemedText>
+          <ThemedText type="defaultSemiBold">{t("plan.saving")}</ThemedText>
         </ThemedView>
       ) : null}
 
@@ -141,9 +143,9 @@ export default function PlanScreen() {
             ))
           ) : (
             <ThemedView style={styles.emptyState}>
-              <ThemedText type="defaultSemiBold">No routines yet</ThemedText>
+              <ThemedText type="defaultSemiBold">{t("plan.noRoutinesYet")}</ThemedText>
               <ThemedText>
-                Tap the + button to create your first routine.
+                {t("plan.tapPlusToCreateFirstRoutine")}
               </ThemedText>
             </ThemedView>
           )}

@@ -20,6 +20,7 @@ import type { SetEntry } from "@/components/train/types";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { tintColorLight } from "@/constants/theme";
+import { useTranslation } from "react-i18next";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { getPreviousSetsForExercise } from "@/utils/training-data";
 
@@ -27,6 +28,7 @@ import { getPreviousSetsForExercise } from "@/utils/training-data";
 const CONTENT_PADDING = 32;
 
 export default function TrainScreen() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const backgroundColor = useThemeColor({}, "background");
   const { routines, workoutHistory, saveWorkoutSession, loading, saving } =
@@ -80,10 +82,10 @@ export default function TrainScreen() {
       log,
     });
     if (error) {
-      Alert.alert("Could not save", error);
+      Alert.alert(t("train.couldNotSave"), error);
       return;
     }
-    Alert.alert("Saved", "This session was saved to your account.");
+    Alert.alert(t("train.savedTitle"), t("train.savedMessage"));
     reset();
   }
 
@@ -105,7 +107,7 @@ export default function TrainScreen() {
     >
       <ThemedView style={styles.headerRow}>
         <View style={styles.headerTitles}>
-          <ThemedText type="title">Train</ThemedText>
+          <ThemedText type="title">{t("train.title")}</ThemedText>
         </View>
       </ThemedView>
 
@@ -119,7 +121,7 @@ export default function TrainScreen() {
 
       {selectedRoutine && day ? (
         <ThemedView style={styles.section}>
-          <ThemedText type="subtitle">Exercises</ThemedText>
+          <ThemedText type="subtitle">{t("train.exercisesSubtitle")}</ThemedText>
           {exercisesForDay.length ? (
             <View style={styles.exerciseList}>
               {exercisesForDay.map((exercise, index) => (
@@ -138,12 +140,12 @@ export default function TrainScreen() {
               ))}
             </View>
           ) : (
-            <ThemedText>No exercises for {day}.</ThemedText>
+            <ThemedText>{t("train.noExercisesForDay", { day })}.</ThemedText>
           )}
 
           <TouchableOpacity
             accessibilityRole="button"
-            accessibilityLabel="Save workout session"
+            accessibilityLabel={t("train.saveSessionAccessibilityLabel")}
             style={[
               styles.saveSession,
               { backgroundColor: tintColorLight },
@@ -154,7 +156,7 @@ export default function TrainScreen() {
             activeOpacity={0.85}
           >
             <Text style={styles.saveSessionText}>
-              {saving ? "Saving…" : "Save session"}
+              {saving ? t("common.saving") : t("train.saveSession")}
             </Text>
           </TouchableOpacity>
         </ThemedView>

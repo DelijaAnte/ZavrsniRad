@@ -22,16 +22,18 @@ import type { Day, Routine } from "@/components/routines/types";
 import { RoutineDayPicker } from "@/components/train/routine-day-picker";
 import { Colors, tintColorLight } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useTranslation } from "react-i18next";
 
-const PROGRESSION_VIEWS: { key: ProgressionDetailView; label: string }[] = [
-  { key: "topSet", label: "Top set" },
-  { key: "trend", label: "Trend" },
-  { key: "allSets", label: "All sets" },
-  { key: "pr", label: "PR" },
-  { key: "activity", label: "Activity" },
+const PROGRESSION_VIEW_KEYS: ProgressionDetailView[] = [
+  "topSet",
+  "trend",
+  "allSets",
+  "pr",
+  "activity",
 ];
 
 export default function AnalyzeScreen() {
+  const { t } = useTranslation();
   const colorScheme = useColorScheme() ?? "light";
   const palette = Colors[colorScheme];
   const isDark = colorScheme === "dark";
@@ -40,6 +42,15 @@ export default function AnalyzeScreen() {
     useState<ProgressionDetailView>("topSet");
   const [routineId, setRoutineId] = useState<string | null>(null);
   const [day, setDay] = useState<Day | null>(null);
+
+  const progressionViews = useMemo(
+    () =>
+      PROGRESSION_VIEW_KEYS.map((key) => ({
+        key,
+        label: t(`analyze.views.${key}`),
+      })),
+    [t]
+  );
 
   const selectedRoutine = useMemo<Routine | null>(() => {
     if (!routineId) return null;
@@ -90,20 +101,20 @@ export default function AnalyzeScreen() {
 
   function renderBody() {
     if (loading) {
-      return <ThemedText>Loading history…</ThemedText>;
+      return <ThemedText>{t("analyze.loadingHistory")}</ThemedText>;
     }
 
     if (progressionDetailView === "activity") {
       if (!routineId) {
         return (
-          <ThemedText>Select a routine above to see activity for that program.</ThemedText>
+          <ThemedText>{t("analyze.selectRoutineForActivity")}</ThemedText>
         );
       }
       return (
         <TrainingConsistencyHeatmap
           sessions={sessionsForSelectedRoutine}
-          dataSubtitle="Days you logged a workout for this routine."
-          emptyHint="No workouts saved for this routine yet. Log a session on the Train tab."
+          dataSubtitle={t("analyze.activity.dataSubtitle")}
+          emptyHint={t("analyze.activity.emptyHint")}
         />
       );
     }
@@ -111,11 +122,11 @@ export default function AnalyzeScreen() {
     if (progressionDetailView === "pr") {
       if (!routineId || !selectedRoutine) {
         return (
-          <ThemedText>Select a routine above to see personal records.</ThemedText>
+          <ThemedText>{t("analyze.selectRoutineForPr")}</ThemedText>
         );
       }
       if (!prRows.length) {
-        return <ThemedText>No exercises in this routine.</ThemedText>;
+        return <ThemedText>{t("analyze.noExercisesInRoutine")}</ThemedText>;
       }
       return <RoutinePRList items={prRows} />;
     }
@@ -123,13 +134,13 @@ export default function AnalyzeScreen() {
     if (!routineId || !day) {
       return (
         <ThemedText>
-          Select a routine and day above to view exercise progression.
+          {t("analyze.selectRoutineAndDayToViewProgression")}
         </ThemedText>
       );
     }
 
     if (!analyzeRows.length) {
-      return <ThemedText>No exercises for {day}.</ThemedText>;
+      return <ThemedText>{t("analyze.noExercisesForDay", { day })}.</ThemedText>;
     }
 
     const cardDetailView: ExerciseProgressCardView = isExerciseProgressCardView(
@@ -160,7 +171,7 @@ export default function AnalyzeScreen() {
             >
               <ThemedText type="defaultSemiBold">{exercise}</ThemedText>
               <ThemedText style={styles.muted}>
-                No saved sessions for this routine and day.
+                {t("analyze.noSavedSessionsForRoutineAndDay")}
               </ThemedText>
             </ThemedView>
           )
@@ -178,7 +189,7 @@ export default function AnalyzeScreen() {
     >
       <ThemedView style={styles.headerRow}>
         <View style={styles.headerTitles}>
-          <ThemedText type="title">Analyze</ThemedText>
+          <ThemedText type="title">{t("analyze.title")}</ThemedText>
         </View>
       </ThemedView>
 
@@ -192,12 +203,12 @@ export default function AnalyzeScreen() {
 
       {(loading || routines.length > 0) && (
         <ThemedView style={styles.section}>
-          <ThemedText type="subtitle">Progression</ThemedText>
+          <ThemedText type="subtitle">{t("analyze.progressionSubtitle")}</ThemedText>
           <ThemedText type="defaultSemiBold" style={styles.progressionViewTitle}>
-            View
+            {t("analyze.viewLabel")}
           </ThemedText>
           <View style={styles.chipsRow}>
-            {PROGRESSION_VIEWS.map(({ key, label }) => {
+            {progressionViews.map(({ key, label }) => {
               const active = progressionDetailView === key;
               return (
                 <TouchableOpacity

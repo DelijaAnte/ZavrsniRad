@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { Colors } from "@/constants/theme";
 
@@ -13,6 +14,7 @@ type AuthModeSwitchProps = {
 };
 
 export function AuthModeSwitch({ mode, palette, onToggleMode }: AuthModeSwitchProps) {
+  const { t } = useTranslation();
   return (
     <Pressable
       onPress={onToggleMode}
@@ -22,15 +24,15 @@ export function AuthModeSwitch({ mode, palette, onToggleMode }: AuthModeSwitchPr
       <Text style={[styles.switchPlain, { color: palette.text }]}>
         {mode === "signIn"
           ? [
-              "Need an account? ",
+              t("auth.needAccountPrefix"),
               <Text key="highlight-up" style={[styles.switchHighlight, { color: palette.tint }]}>
-                Sign up
+                {t("auth.signUp")}
               </Text>,
             ]
           : [
-              "Already have an account? ",
+              t("auth.alreadyHaveAccountPrefix"),
               <Text key="highlight-in" style={[styles.switchHighlight, { color: palette.tint }]}>
-                Sign in
+                {t("auth.signIn")}
               </Text>,
             ]}
       </Text>

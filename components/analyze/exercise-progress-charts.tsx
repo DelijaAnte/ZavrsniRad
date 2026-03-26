@@ -7,6 +7,7 @@ import { ThemedText } from "@/components/themed-text";
 import { Colors, tintColorLight } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { hexToRgba } from "@/utils/hex-to-rgba";
+import { useTranslation } from "react-i18next";
 
 function formatShortDate(iso: string): string {
   const d = new Date(iso);
@@ -22,6 +23,7 @@ export function ExerciseProgressCharts({
 }: {
   progression: ExerciseProgression;
 }) {
+  const { t } = useTranslation();
   const colorScheme = useColorScheme() ?? "light";
   const palette = Colors[colorScheme];
   const chartSurface =
@@ -78,7 +80,7 @@ export function ExerciseProgressCharts({
     <View style={styles.wrap}>
       {weightSeries ? (
         <View style={styles.chartBlock}>
-          <ThemedText style={styles.caption}>Weight (kg) — top set</ThemedText>
+          <ThemedText style={styles.caption}>{t("analyze.charts.weightCaption")}</ThemedText>
           <LineChart
             data={{
               labels: weightSeries.labels,
@@ -97,12 +99,12 @@ export function ExerciseProgressCharts({
           />
         </View>
       ) : (
-        <ThemedText style={styles.muted}>No weight values to chart.</ThemedText>
+        <ThemedText style={styles.muted}>{t("analyze.charts.noWeightValues")}</ThemedText>
       )}
 
       {repsSeries ? (
         <View style={styles.chartBlock}>
-          <ThemedText style={styles.caption}>Reps — top set</ThemedText>
+          <ThemedText style={styles.caption}>{t("analyze.charts.repsCaption")}</ThemedText>
           <LineChart
             data={{
               labels: repsSeries.labels,
@@ -121,7 +123,7 @@ export function ExerciseProgressCharts({
           />
         </View>
       ) : (
-        <ThemedText style={styles.muted}>No rep values to chart.</ThemedText>
+        <ThemedText style={styles.muted}>{t("analyze.charts.noRepValues")}</ThemedText>
       )}
     </View>
   );

@@ -7,6 +7,7 @@ import type { ExerciseProgressCardView } from "@/components/analyze/progression-
 import { ThemedText } from "@/components/themed-text";
 import { Colors, tintColorLight } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useTranslation } from "react-i18next";
 
 function formatKg(value: number): string {
   return Number.isInteger(value) ? `${value}` : value.toFixed(1);
@@ -79,6 +80,7 @@ export function ExerciseProgressCard({
   progression: ExerciseProgression;
   detailView: ExerciseProgressCardView;
 }) {
+  const { t } = useTranslation();
   const colorScheme = useColorScheme() ?? "light";
   const palette = Colors[colorScheme];
   const isDark = colorScheme === "dark";
@@ -143,8 +145,8 @@ export function ExerciseProgressCard({
       <ThemedText type="defaultSemiBold">{progression.exercise}</ThemedText>
       <Text style={[styles.unitHint, { color: palette.icon }]}>
         {detailView === "allSets"
-          ? "Every logged set per workout"
-          : "Top set (first set) per saved session on this day"}
+          ? t("analyze.card.unitHintAllSets")
+          : t("analyze.card.unitHintTopSet")}
       </Text>
 
       {detailView === "topSet" ? (
@@ -158,12 +160,12 @@ export function ExerciseProgressCard({
             <Text
               style={[styles.sessionHead, styles.colDate, { color: palette.icon }]}
             >
-              Date
+              {t("analyze.card.date")}
             </Text>
             <Text
               style={[styles.sessionHead, styles.colKg, { color: palette.icon }]}
             >
-              kg
+              {t("analyze.card.kg")}
             </Text>
             <Text
               style={[
@@ -172,7 +174,7 @@ export function ExerciseProgressCard({
                 { color: palette.icon },
               ]}
             >
-              reps
+              {t("analyze.card.reps")}
             </Text>
             {showRpeTieBreak ? (
               <Text
@@ -182,7 +184,7 @@ export function ExerciseProgressCard({
                   { color: palette.icon },
                 ]}
               >
-                RPE
+                {t("analyze.card.rpe")}
               </Text>
             ) : null}
           </View>
@@ -258,20 +260,20 @@ export function ExerciseProgressCard({
                 ]}
               >
                 <Text style={[styles.miniHead, styles.colSet, { color: palette.icon }]}>
-                  Set
+                  {t("analyze.card.set")}
                 </Text>
                 <Text style={[styles.miniHead, styles.colKg, { color: palette.icon }]}>
-                  kg
+                  {t("analyze.card.kg")}
                 </Text>
                 <Text
                   style={[styles.miniHead, styles.colReps, { color: palette.icon }]}
                 >
-                  reps
+                  {t("analyze.card.reps")}
                 </Text>
                 <Text
                   style={[styles.miniHead, styles.colRpe, { color: palette.icon }]}
                 >
-                  RPE
+                  {t("analyze.card.rpe")}
                 </Text>
               </View>
               {block.sets.map((set, si) => (
@@ -321,12 +323,12 @@ export function ExerciseProgressCard({
       {detailView === "topSet" ? (
         <View style={[styles.summary, { borderTopColor: summaryDivider }]}>
           <ThemedText type="defaultSemiBold" style={styles.summaryTitle}>
-            Previous → latest
+            {t("analyze.card.previousLatest")}
           </ThemedText>
 
           <View style={styles.metricBlock}>
             <Text style={[styles.metricLabel, { color: palette.icon }]}>
-              Weight (kg)
+              {t("analyze.card.weightKgLabel")}
             </Text>
             <View style={styles.metricValues}>
               <Text style={[styles.metricMain, { color: palette.text }]}>
@@ -341,7 +343,7 @@ export function ExerciseProgressCard({
 
           <View style={styles.metricBlock}>
             <Text style={[styles.metricLabel, { color: palette.icon }]}>
-              Reps (top set)
+              {t("analyze.card.repsTopSetLabel")}
             </Text>
             <View style={styles.metricValues}>
               <Text style={[styles.metricMain, { color: palette.text }]}>
@@ -357,7 +359,7 @@ export function ExerciseProgressCard({
           {showRpeTieBreak ? (
             <View style={styles.metricBlock}>
               <Text style={[styles.metricLabel, { color: palette.icon }]}>
-                RPE (top set)
+                {t("analyze.card.rpeTopSetLabel")}
               </Text>
               <View style={styles.metricValues}>
                 <Text style={[styles.metricMain, { color: palette.text }]}>
@@ -376,26 +378,26 @@ export function ExerciseProgressCard({
       {detailView === "topSet" ? (
         needsMoreSessions ? (
           <ThemedText style={styles.hint}>
-            Log this day again to compare your latest top set to the previous
-            workout.
+            {t("analyze.card.hintLogAgain")}
           </ThemedText>
         ) : (
           <ThemedText style={styles.hint}>
-            {progression.sessionsUsed} session
-            {progression.sessionsUsed === 1 ? "" : "s"} recorded. Δ is — when a
-            value is missing.
+            {t("analyze.card.hintSessionsRecorded", {
+              sessionsUsed: progression.sessionsUsed,
+            })}
           </ThemedText>
         )
       ) : detailView === "allSets" ? (
         <ThemedText style={styles.hint}>
-          {progression.sessionsUsed} workout
-          {progression.sessionsUsed === 1 ? "" : "s"} with this exercise on this
-          day.
+          {t("analyze.card.hintAllSets", {
+            sessionsUsed: progression.sessionsUsed,
+          })}
         </ThemedText>
       ) : (
         <ThemedText style={styles.hint}>
-          Top-set trend across {progression.sessionsUsed} session
-          {progression.sessionsUsed === 1 ? "" : "s"}.
+          {t("analyze.card.hintTopSetTrend", {
+            sessionsUsed: progression.sessionsUsed,
+          })}
         </ThemedText>
       )}
     </View>
