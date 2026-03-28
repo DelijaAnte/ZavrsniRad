@@ -112,6 +112,10 @@ const hr = {
       noExercisesForDay: "Nema vježbi za {{day}}",
       noSavedSessionsForRoutineAndDay:
         "Nema spremljenih sesija za ovu rutinu i dan.",
+      prList: {
+        noLoggedSets:
+          "Nema zabilježenih serija za ovu vježbu u ovoj rutini.",
+      },
       views: {
         topSet: "Top set",
         trend: "Trend",

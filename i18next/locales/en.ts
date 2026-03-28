@@ -110,6 +110,10 @@ const en = {
       noExercisesForDay: "No exercises for {{day}}",
       noSavedSessionsForRoutineAndDay:
         "No saved sessions for this routine and day.",
+      prList: {
+        noLoggedSets:
+          "No logged sets for this exercise in this routine.",
+      },
       views: {
         topSet: "Top set",
         trend: "Trend",

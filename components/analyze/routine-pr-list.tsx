@@ -55,7 +55,7 @@ export function RoutinePRList({
             </>
           ) : (
             <ThemedText style={styles.empty}>
-              No logged sets for this exercise in this routine.
+              {t("analyze.prList.noLoggedSets")}
             </ThemedText>
           )}
         </View>
