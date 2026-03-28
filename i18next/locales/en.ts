@@ -21,13 +21,13 @@ const en = {
     },
     days: {
       short: {
-        mon: "mon",
-        tue: "tue",
-        wed: "wed",
-        thu: "thu",
-        fri: "fri",
-        sat: "sat",
-        sun: "sun",
+        mon: "Mon",
+        tue: "Tue",
+        wed: "Wed",
+        thu: "Thu",
+        fri: "Fri",
+        sat: "Sat",
+        sun: "Sun",
       },
     },
     auth: {
@@ -67,7 +67,8 @@ const en = {
       loadingPlans: "Loading your plans…",
       saving: "Saving…",
       noRoutinesYet: "No routines yet",
-      tapPlusToCreateFirstRoutine: "Tap the + button to create your first routine.",
+      tapPlusToCreateFirstRoutine:
+        "Tap the + button to create your first routine.",
       deleteRoutineTitle: "Delete routine",
       deleteRoutineMessage:
         'Remove "{{name}}"? Workout history for this routine will also be removed.',
@@ -102,8 +103,7 @@ const en = {
         emptyHint:
           "No workouts saved for this routine yet. Log a session on the Train tab.",
       },
-      selectRoutineForPr:
-        "Select a routine above to see personal records.",
+      selectRoutineForPr: "Select a routine above to see personal records.",
       noExercisesInRoutine: "No exercises in this routine.",
       selectRoutineAndDayToViewProgression:
         "Select a routine and day above to view exercise progression.",
@@ -111,8 +111,7 @@ const en = {
       noSavedSessionsForRoutineAndDay:
         "No saved sessions for this routine and day.",
       prList: {
-        noLoggedSets:
-          "No logged sets for this exercise in this routine.",
+        noLoggedSets: "No logged sets for this exercise in this routine.",
       },
       views: {
         topSet: "Top set",
@@ -149,8 +148,7 @@ const en = {
           "{{sessionsUsed}} session(s) recorded. Δ is — when a value is missing.",
         hintAllSets:
           "{{sessionsUsed}} workout(s) with this exercise on this day.",
-        hintTopSetTrend:
-          "Top-set trend across {{sessionsUsed}} session(s).",
+        hintTopSetTrend: "Top-set trend across {{sessionsUsed}} session(s).",
       },
     },
     routineDayPicker: {

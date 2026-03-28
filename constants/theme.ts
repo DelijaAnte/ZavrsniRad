@@ -5,6 +5,12 @@
 
 import { Platform } from 'react-native';
 
+/** Bungee (Google Fonts), loaded in `app/_layout.tsx` via `@expo-google-fonts/bungee`. */
+export const fontFamilyDisplay = 'Bungee_400Regular';
+
+/** Nunito Sans; load `NunitoSans_700Bold` in `app/_layout.tsx`. */
+export const fontFamilySubtitle = 'NunitoSans_700Bold';
+
 /** Primary brand blue (tab accent, key actions, chips). */
 export const tintColorLight = '#0a7ea4';
 const tintColorDark = '#fff';

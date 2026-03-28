@@ -1,11 +1,12 @@
 import { StyleSheet, Text, type TextProps, type TextStyle } from 'react-native';
 
+import { fontFamilyDisplay, fontFamilySubtitle } from '@/constants/theme';
 import { useThemeColor } from '@/hooks/use-theme-color';
 
 export type ThemedTextProps = TextProps & {
   lightColor?: string;
   darkColor?: string;
-  type?: 'default' | 'title' | 'defaultSemiBold' | 'subtitle' | 'link';
+  type?: 'default' | 'title' | 'tabScreenHeader' | 'defaultSemiBold' | 'subtitle' | 'link';
   /** Android: removes extra font padding that can clip descenders */
   includeFontPadding?: boolean;
 };
@@ -24,13 +25,15 @@ export function ThemedText({
       ? styles.default
       : type === 'title'
         ? styles.title
-        : type === 'defaultSemiBold'
-          ? styles.defaultSemiBold
-          : type === 'subtitle'
-            ? styles.subtitle
-            : type === 'link'
-              ? styles.link
-              : undefined;
+        : type === 'tabScreenHeader'
+          ? styles.tabScreenHeader
+          : type === 'defaultSemiBold'
+            ? styles.defaultSemiBold
+            : type === 'subtitle'
+              ? styles.subtitle
+              : type === 'link'
+                ? styles.link
+                : undefined;
 
   const flattened = StyleSheet.flatten([typeStyle, style]) as TextStyle | undefined;
   const resolvedColor =
@@ -59,9 +62,15 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     lineHeight: 32,
   },
+  tabScreenHeader: {
+    fontSize: 32,
+    lineHeight: 38,
+    fontFamily: fontFamilyDisplay,
+  },
   subtitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+    lineHeight: 26,
+    fontFamily: fontFamilySubtitle,
   },
   link: {
     lineHeight: 30,

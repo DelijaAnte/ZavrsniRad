@@ -1,7 +1,7 @@
 import ParallaxScrollView from "@/components/parallax-scroll-view";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
-import { Colors, tintColorLight } from "@/constants/theme";
+import { Colors, fontFamilySubtitle, tintColorLight } from "@/constants/theme";
 import { useAuth } from "@/context/auth-context";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -127,7 +127,7 @@ export default function ProfileScreen() {
       <View style={styles.pageColumn}>
         <ThemedView style={styles.headerRow}>
           <View style={styles.headerTitles}>
-            <ThemedText type="title">{t("profile.title")}</ThemedText>
+            <ThemedText type="tabScreenHeader">{t("profile.title")}</ThemedText>
           </View>
         </ThemedView>
 
@@ -145,7 +145,7 @@ export default function ProfileScreen() {
           >
             <View style={styles.topBlock}>
               <View style={styles.languageBlock}>
-                <ThemedText type="defaultSemiBold" style={styles.languageLabel}>
+                <ThemedText style={styles.languageLabel}>
                   {t("profile.language")}
                 </ThemedText>
                 <View style={styles.languageRow}>
@@ -420,6 +420,9 @@ const styles = StyleSheet.create({
   },
   languageLabel: {
     marginBottom: 2,
+    fontSize: 16,
+    lineHeight: 22,
+    fontFamily: fontFamilySubtitle,
   },
   languageRow: {
     flexDirection: "row",
@@ -436,6 +439,7 @@ const styles = StyleSheet.create({
   },
   languageButtonText: {
     fontSize: 15,
-    fontWeight: "700",
+    lineHeight: 20,
+    fontFamily: fontFamilySubtitle,
   },
 });

@@ -87,7 +87,7 @@ export default function PlanScreen() {
     <ParallaxScrollView>
       <ThemedView style={styles.headerRow}>
         <View style={styles.headerTitles}>
-          <ThemedText type="title">{t("plan.title")}</ThemedText>
+          <ThemedText type="tabScreenHeader">{t("plan.title")}</ThemedText>
         </View>
         <TouchableOpacity
           accessibilityRole="button"

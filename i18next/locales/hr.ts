@@ -21,13 +21,13 @@ const hr = {
     },
     days: {
       short: {
-        mon: "pon",
-        tue: "uto",
-        wed: "sri",
-        thu: "čet",
-        fri: "pet",
-        sat: "sub",
-        sun: "ned",
+        mon: "Pon",
+        tue: "Uto",
+        wed: "Sri",
+        thu: "Čet",
+        fri: "Pet",
+        sat: "Sub",
+        sun: "Ned",
       },
     },
     auth: {
@@ -50,8 +50,7 @@ const hr = {
       notSignedIn: "Niste prijavljeni",
       sourceCode: "Izvorni kod",
       viewOnGitHub: "Pogledaj na GitHubu",
-      viewSourceCodeAccessibilityLabel:
-        "Pogledaj izvorni kod na GitHubu",
+      viewSourceCodeAccessibilityLabel: "Pogledaj izvorni kod na GitHubu",
       signOut: "Odjava",
       deleteAccount: "Obriši račun",
       deleteAccountTitle: "Obriši račun",
@@ -105,7 +104,8 @@ const hr = {
         emptyHint:
           "Još nema spremljenih treninga za ovu rutinu. Zabilježite sesiju na kartici Trening.",
       },
-      selectRoutineForPr: "Odaberite rutinu iznad kako biste vidjeli osobne rekorde.",
+      selectRoutineForPr:
+        "Odaberite rutinu iznad kako biste vidjeli osobne rekorde.",
       noExercisesInRoutine: "Nema vježbi u ovoj rutini.",
       selectRoutineAndDayToViewProgression:
         "Odaberite rutinu i dan iznad kako biste vidjeli napredak vježbi.",
@@ -113,8 +113,7 @@ const hr = {
       noSavedSessionsForRoutineAndDay:
         "Nema spremljenih sesija za ovu rutinu i dan.",
       prList: {
-        noLoggedSets:
-          "Nema zabilježenih serija za ovu vježbu u ovoj rutini.",
+        noLoggedSets: "Nema zabilježenih serija za ovu vježbu u ovoj rutini.",
       },
       views: {
         topSet: "Top set",
@@ -150,10 +149,8 @@ const hr = {
           "Zabilježite ovaj dan ponovno kako biste usporedili svoj zadnji top set s prethodnim treningom.",
         hintSessionsRecorded:
           "{{sessionsUsed}} sesija zabilježena. Δ je — kada nedostaje vrijednost.",
-        hintAllSets:
-          "{{sessionsUsed}} trening(s) s ovom vježbom na ovaj dan.",
-        hintTopSetTrend:
-          "Trend top-seta kroz {{sessionsUsed}} sesiju(s).",
+        hintAllSets: "{{sessionsUsed}} trening(s) s ovom vježbom na ovaj dan.",
+        hintTopSetTrend: "Trend top-seta kroz {{sessionsUsed}} sesiju(s).",
         sessionSingular: "sesija",
         sessionPlural: "sesija",
         workoutSingular: "trening",

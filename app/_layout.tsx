@@ -1,3 +1,6 @@
+import { Bungee_400Regular } from "@expo-google-fonts/bungee";
+import { NunitoSans_700Bold } from "@expo-google-fonts/nunito-sans";
+import { useFonts } from "expo-font";
 import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { Stack, useRootNavigationState, useRouter, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -22,6 +25,10 @@ export const unstable_settings = {
 };
 
 function RootNavigator() {
+  const [fontsLoaded, fontError] = useFonts({
+    Bungee_400Regular,
+    NunitoSans_700Bold,
+  });
   const colorScheme = useColorScheme();
   const { session, initialized } = useAuth();
   const segments = useSegments();
@@ -31,11 +38,17 @@ function RootNavigator() {
   const navigationReady = Boolean(rootNavigationState?.key);
 
   useEffect(() => {
-    if (!initialized || !navigationReady) return;
+    if (__DEV__ && fontError) {
+      console.warn("[fonts] Failed to load:", fontError);
+    }
+  }, [fontError]);
+
+  useEffect(() => {
+    if (!initialized || !navigationReady || !fontsLoaded) return;
     void SplashScreen.hideAsync().catch(() => {
       /* already hidden or native module unavailable */
     });
-  }, [initialized, navigationReady]);
+  }, [initialized, navigationReady, fontsLoaded]);
 
   /** Never leave users stuck on the splash if auth or navigation stalls. */
   useEffect(() => {

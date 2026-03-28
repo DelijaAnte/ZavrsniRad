@@ -107,7 +107,7 @@ export default function TrainScreen() {
     >
       <ThemedView style={styles.headerRow}>
         <View style={styles.headerTitles}>
-          <ThemedText type="title">{t("train.title")}</ThemedText>
+          <ThemedText type="tabScreenHeader">{t("train.title")}</ThemedText>
         </View>
       </ThemedView>
 

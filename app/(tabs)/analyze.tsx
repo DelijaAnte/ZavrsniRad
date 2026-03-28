@@ -184,7 +184,7 @@ export default function AnalyzeScreen() {
     <ParallaxScrollView>
       <ThemedView style={styles.headerRow}>
         <View style={styles.headerTitles}>
-          <ThemedText type="title">{t("analyze.title")}</ThemedText>
+          <ThemedText type="tabScreenHeader">{t("analyze.title")}</ThemedText>
         </View>
       </ThemedView>
 
