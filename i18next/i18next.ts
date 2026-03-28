@@ -51,8 +51,10 @@ export const changeLanguage = (language: AppLanguage) =>
   i18n.changeLanguage(language);
 
 export const setAppLanguage = async (language: AppLanguage) => {
-  await AsyncStorage.setItem(LANGUAGE_STORAGE_KEY, language);
   await i18n.changeLanguage(language);
+  void AsyncStorage.setItem(LANGUAGE_STORAGE_KEY, language).catch(() => {
+    // Keep in-memory language; persistence can fail if storage is unavailable.
+  });
 };
 
 // Resolve persisted user choice after init.
