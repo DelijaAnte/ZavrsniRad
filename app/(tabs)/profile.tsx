@@ -18,6 +18,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
+import SwitchSelector from "react-native-switch-selector";
 
 import { setAppLanguage, type AppLanguage } from "@/i18next/i18next";
 
@@ -31,6 +32,11 @@ export default function ProfileScreen() {
   const theme = Colors[colorScheme];
   const tint = theme.tint;
   const currentLanguage: AppLanguage = i18n.language === "hr" ? "hr" : "en";
+  const languageIndex = currentLanguage === "hr" ? 1 : 0;
+  const languageOptions = [
+    { label: t("language.en"), value: "en" as const },
+    { label: t("language.hr"), value: "hr" as const },
+  ];
   const [deletingAccount, setDeletingAccount] = useState(false);
   const mountedRef = useRef(true);
   const { height: windowHeight } = useWindowDimensions();
@@ -148,69 +154,31 @@ export default function ProfileScreen() {
                 <ThemedText style={styles.languageLabel}>
                   {t("profile.language")}
                 </ThemedText>
-                <View style={styles.languageRow}>
-                  <TouchableOpacity
-                    accessibilityRole="button"
-                    accessibilityLabel={t("language.en")}
-                    onPress={() => void setAppLanguage("en")}
-                    style={[
-                      styles.languageButton,
-                      {
-                        borderColor: currentLanguage === "en"
-                          ? theme.tintBorder
-                          : theme.borderChip,
-                        backgroundColor: currentLanguage === "en"
-                          ? theme.tintMuted
-                          : theme.surfaceCard,
-                      },
-                    ]}
-                    activeOpacity={0.85}
-                  >
-                    <Text
-                      style={[
-                        styles.languageButtonText,
-                        currentLanguage === "en"
-                          ? {
-                              color: isLight ? tintColorLight : theme.tint,
-                            }
-                          : { color: isLight ? "#0c2f35" : theme.text },
-                      ]}
-                    >
-                      {t("language.en")}
-                    </Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    accessibilityRole="button"
-                    accessibilityLabel={t("language.hr")}
-                    onPress={() => void setAppLanguage("hr")}
-                    style={[
-                      styles.languageButton,
-                      {
-                        borderColor: currentLanguage === "hr"
-                          ? theme.tintBorder
-                          : theme.borderChip,
-                        backgroundColor: currentLanguage === "hr"
-                          ? theme.tintMuted
-                          : theme.surfaceCard,
-                      },
-                    ]}
-                    activeOpacity={0.85}
-                  >
-                    <Text
-                      style={[
-                        styles.languageButtonText,
-                        currentLanguage === "hr"
-                          ? {
-                              color: isLight ? tintColorLight : theme.tint,
-                            }
-                          : { color: isLight ? "#0c2f35" : theme.text },
-                      ]}
-                    >
-                      {t("language.hr")}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
+                <SwitchSelector
+                  initial={languageIndex}
+                  value={languageIndex}
+                  onPress={(value: string) => {
+                    const lang = value as AppLanguage;
+                    if (lang === currentLanguage) return;
+                    void setAppLanguage(lang);
+                  }}
+                  options={languageOptions}
+                  fontSize={15}
+                  hasPadding
+                  valuePadding={3}
+                  height={40}
+                  borderRadius={14}
+                  borderWidth={1}
+                  animationDuration={180}
+                  backgroundColor={theme.surfaceMuted}
+                  borderColor={theme.borderChip}
+                  buttonColor={theme.tintMuted}
+                  textColor={isLight ? "#0c2f35" : theme.text}
+                  selectedColor={isLight ? tintColorLight : theme.tint}
+                  textStyle={{ fontFamily: fontFamilySubtitle }}
+                  selectedTextStyle={{ fontFamily: fontFamilySubtitle }}
+                  style={styles.languageSwitch}
+                />
               </View>
 
               <TouchableOpacity
@@ -424,22 +392,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     fontFamily: fontFamilySubtitle,
   },
-  languageRow: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  languageButton: {
-    flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    borderRadius: 14,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  languageButtonText: {
-    fontSize: 15,
-    lineHeight: 20,
-    fontFamily: fontFamilySubtitle,
+  languageSwitch: {
+    alignSelf: "stretch",
   },
 });
