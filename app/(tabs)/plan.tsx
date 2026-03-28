@@ -16,6 +16,7 @@ import { useRoutines } from "@/components/routines/routines-store";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { Colors, tintColorLight } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useTranslation } from "react-i18next";
 
 export default function PlanScreen() {
@@ -33,6 +34,7 @@ export default function PlanScreen() {
     error,
   } = useRoutines();
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const isDark = (useColorScheme() ?? "light") === "dark";
 
   function openCreateModal() {
     if (loading) return;
@@ -142,7 +144,15 @@ export default function PlanScreen() {
               />
             ))
           ) : (
-            <ThemedView style={styles.emptyState}>
+            <ThemedView
+              style={[
+                styles.emptyState,
+                {
+                  borderColor: isDark ? "#2f3638" : "#eee",
+                  backgroundColor: isDark ? "#1e2224" : undefined,
+                },
+              ]}
+            >
               <ThemedText type="defaultSemiBold">{t("plan.noRoutinesYet")}</ThemedText>
               <ThemedText>
                 {t("plan.tapPlusToCreateFirstRoutine")}
@@ -198,7 +208,6 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#eee",
     gap: 6,
   },
   fabDisabled: {

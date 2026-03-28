@@ -24,6 +24,8 @@ export const Colors = {
     /** Parallax header behind tab content */
     parallaxHeader: '#aedce8',
     tabBarBackground: '#f7fbfc',
+    /** Subtle outline for empty states, cards, dividers */
+    borderSubtle: '#e5e5e5',
   },
   dark: {
     text: '#ECEDEE',
@@ -36,6 +38,7 @@ export const Colors = {
     tintBorder: '#4d8fa3',
     parallaxHeader: '#1D3D47',
     tabBarBackground: '#151718',
+    borderSubtle: '#3a3f42',
   },
 };
 
