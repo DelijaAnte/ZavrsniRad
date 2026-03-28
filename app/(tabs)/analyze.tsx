@@ -181,12 +181,7 @@ export default function AnalyzeScreen() {
   }
 
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{
-        light: Colors.light.parallaxHeader,
-        dark: Colors.dark.parallaxHeader,
-      }}
-    >
+    <ParallaxScrollView>
       <ThemedView style={styles.headerRow}>
         <View style={styles.headerTitles}>
           <ThemedText type="title">{t("analyze.title")}</ThemedText>

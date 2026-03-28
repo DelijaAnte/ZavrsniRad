@@ -122,10 +122,6 @@ export default function ProfileScreen() {
 
   return (
     <ParallaxScrollView
-      headerBackgroundColor={{
-        light: Colors.light.parallaxHeader,
-        dark: Colors.dark.parallaxHeader,
-      }}
       contentContainerStyle={styles.scrollContent}
       contentPaddingBottom={insets.bottom}
     >

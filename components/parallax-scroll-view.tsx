@@ -18,7 +18,8 @@ const CONTENT_PADDING = 32;
 
 type Props = PropsWithChildren<{
   headerImage?: ReactElement | null;
-  headerBackgroundColor: { dark: string; light: string };
+  /** Used as the header band color when `headerImage` is set. Optional when there is no header image. */
+  headerBackgroundColor?: { dark: string; light: string };
   /** Merged into ScrollView `contentContainerStyle` (e.g. `{ flexGrow: 1 }` to fill the viewport). */
   contentContainerStyle?: StyleProp<ViewStyle>;
   /**
@@ -79,7 +80,10 @@ export default function ParallaxScrollView({
         <Animated.View
           style={[
             styles.header,
-            { backgroundColor: headerBackgroundColor[colorScheme] },
+            {
+              backgroundColor:
+                headerBackgroundColor?.[colorScheme] ?? backgroundColor,
+            },
             headerAnimatedStyle,
           ]}
         >

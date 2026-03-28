@@ -15,7 +15,7 @@ import type { Routine } from "@/components/routines/types";
 import { useRoutines } from "@/components/routines/routines-store";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
-import { Colors, tintColorLight } from "@/constants/theme";
+import { tintColorLight } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useTranslation } from "react-i18next";
 
@@ -82,12 +82,7 @@ export default function PlanScreen() {
   }
 
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{
-        light: Colors.light.parallaxHeader,
-        dark: Colors.dark.parallaxHeader,
-      }}
-    >
+    <ParallaxScrollView>
       <ThemedView style={styles.headerRow}>
         <View style={styles.headerTitles}>
           <ThemedText type="title">{t("plan.title")}</ThemedText>
