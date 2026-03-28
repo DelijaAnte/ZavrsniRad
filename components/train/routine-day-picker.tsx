@@ -47,14 +47,10 @@ export function RoutineDayPicker({
                     {
                       borderColor: active
                         ? palette.tintBorder
-                        : isDark
-                          ? "#2f3638"
-                          : "#ddd",
+                        : palette.borderChip,
                       backgroundColor: active
                         ? palette.tintMuted
-                        : isDark
-                          ? "#1e2224"
-                          : "#fff",
+                        : palette.surfaceCard,
                     },
                   ]}
                   activeOpacity={0.85}
@@ -83,8 +79,8 @@ export function RoutineDayPicker({
             style={[
               styles.emptyState,
               {
-                borderColor: isDark ? "#2f3638" : "#eee",
-                backgroundColor: isDark ? "#1e2224" : undefined,
+                borderColor: palette.borderHairline,
+                backgroundColor: isDark ? palette.surfaceCard : undefined,
               },
             ]}
           >
@@ -110,14 +106,10 @@ export function RoutineDayPicker({
                       {
                         borderColor: active
                           ? palette.tintBorder
-                          : isDark
-                            ? "#2f3638"
-                            : "#ddd",
+                          : palette.borderChip,
                         backgroundColor: active
                           ? palette.tintMuted
-                          : isDark
-                            ? "#1e2224"
-                            : "#fff",
+                          : palette.surfaceCard,
                       },
                     ]}
                     activeOpacity={0.85}

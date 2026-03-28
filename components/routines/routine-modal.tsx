@@ -124,10 +124,10 @@ export function RoutineModal({
   const colorScheme = useColorScheme() ?? "light";
   const palette = Colors[colorScheme];
   const isDark = colorScheme === "dark";
-  const surface = isDark ? "#1e2224" : "#fff";
-  const surfaceInset = isDark ? "#151718" : "#fff";
-  const border = isDark ? "#2f3638" : "#ddd";
-  const borderMuted = isDark ? "#2f3638" : "#eee";
+  const surface = palette.surfaceCard;
+  const surfaceInset = isDark ? palette.surfaceMuted : palette.surfaceCard;
+  const border = palette.borderChip;
+  const borderMuted = palette.borderHairline;
   const selectedChipStyle = useMemo(
     () => ({
       backgroundColor: palette.tintMuted,

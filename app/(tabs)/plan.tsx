@@ -15,7 +15,7 @@ import type { Routine } from "@/components/routines/types";
 import { useRoutines } from "@/components/routines/routines-store";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
-import { tintColorLight } from "@/constants/theme";
+import { Colors, tintColorLight } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useTranslation } from "react-i18next";
 
@@ -34,7 +34,9 @@ export default function PlanScreen() {
     error,
   } = useRoutines();
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const isDark = (useColorScheme() ?? "light") === "dark";
+  const colorScheme = useColorScheme() ?? "light";
+  const isDark = colorScheme === "dark";
+  const palette = Colors[colorScheme];
 
   function openCreateModal() {
     if (loading) return;
@@ -143,8 +145,8 @@ export default function PlanScreen() {
               style={[
                 styles.emptyState,
                 {
-                  borderColor: isDark ? "#2f3638" : "#eee",
-                  backgroundColor: isDark ? "#1e2224" : undefined,
+                  borderColor: palette.borderHairline,
+                  backgroundColor: isDark ? palette.surfaceCard : undefined,
                 },
               ]}
             >

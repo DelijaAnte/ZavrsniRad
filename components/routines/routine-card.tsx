@@ -35,9 +35,9 @@ export function RoutineCard({
     );
   }, [routine.days, routine.exercisesByDay]);
 
-  const cardBg = isDark ? "#1e2224" : "#FFFFFF";
-  const cardBorder = isDark ? "#2f3638" : "#E8EBED";
-  const dividerBorder = isDark ? "#2f3638" : "#EEF0F2";
+  const cardBg = palette.surfaceCard;
+  const cardBorder = palette.borderCard;
+  const dividerBorder = palette.borderDivider;
   const metaColor = isDark ? palette.icon : META_MUTED_LIGHT;
 
   const cardShadow = isDark

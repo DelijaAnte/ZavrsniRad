@@ -83,13 +83,12 @@ export function ExerciseProgressCard({
   const { t } = useTranslation();
   const colorScheme = useColorScheme() ?? "light";
   const palette = Colors[colorScheme];
-  const isDark = colorScheme === "dark";
-  const cardBg = isDark ? "#1e2224" : "#fff";
-  const cardBorder = isDark ? "#2f3638" : "#eee";
-  const tableBorder = isDark ? "#2f3638" : "#e8e8e8";
-  const rowBorder = isDark ? "#2f3638" : "#eee";
-  const rowAltBg = isDark ? "#151718" : "#fafafa";
-  const summaryDivider = isDark ? "#2f3638" : "#f0f0f0";
+  const cardBg = palette.surfaceCard;
+  const cardBorder = palette.borderHairline;
+  const tableBorder = palette.borderTable;
+  const rowBorder = palette.borderHairline;
+  const rowAltBg = palette.surfaceMuted;
+  const summaryDivider = palette.borderSummarySoft;
 
   const needsMoreSessions = progression.sessionsUsed < 2;
 

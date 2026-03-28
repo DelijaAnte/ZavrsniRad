@@ -28,10 +28,9 @@ export function RoutinePRList({
 }) {
   const colorScheme = useColorScheme() ?? "light";
   const palette = Colors[colorScheme];
-  const isDark = colorScheme === "dark";
   const { t } = useTranslation();
-  const cardBg = isDark ? "#1e2224" : "#fff";
-  const cardBorder = isDark ? "#2f3638" : "#eee";
+  const cardBg = palette.surfaceCard;
+  const cardBorder = palette.borderHairline;
 
   return (
     <View style={styles.list}>

@@ -26,6 +26,24 @@ export const Colors = {
     tabBarBackground: '#f7fbfc',
     /** Subtle outline for empty states, cards, dividers */
     borderSubtle: '#e5e5e5',
+    /** Elevated card / panel surface (Plan, Train, Analyze) */
+    surfaceCard: '#FFFFFF',
+    /** Inset fields, zebra rows, empty placeholders */
+    surfaceMuted: '#fafafa',
+    /** Primary card outline */
+    borderCard: '#E8EBED',
+    /** Divider between sections inside a card */
+    borderDivider: '#EEF0F2',
+    /** Hairline borders (secondary outlines, empty states) */
+    borderHairline: '#eeeeee',
+    /** Table / chart grid lines */
+    borderTable: '#e8e8e8',
+    /** Soft separator in summary blocks */
+    borderSummarySoft: '#f0f0f0',
+    /** Inactive chip / control outline */
+    borderChip: '#dddddd',
+    /** Text field border on cards */
+    borderInput: '#dddddd',
   },
   dark: {
     text: '#ECEDEE',
@@ -39,6 +57,15 @@ export const Colors = {
     parallaxHeader: '#1D3D47',
     tabBarBackground: '#151718',
     borderSubtle: '#3a3f42',
+    surfaceCard: '#1e2224',
+    surfaceMuted: '#151718',
+    borderCard: '#2f3638',
+    borderDivider: '#2f3638',
+    borderHairline: '#2f3638',
+    borderTable: '#2f3638',
+    borderSummarySoft: '#2f3638',
+    borderChip: '#2f3638',
+    borderInput: '#3a4044',
   },
 };
 

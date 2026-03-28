@@ -36,14 +36,13 @@ export function ExerciseLogCard({
   const { t } = useTranslation();
   const colorScheme = useColorScheme() ?? "light";
   const palette = Colors[colorScheme];
-  const isDark = colorScheme === "dark";
-  const cardBg = isDark ? "#1e2224" : "#fff";
-  const cardBorder = isDark ? "#2f3638" : "#eee";
-  const inputBg = isDark ? "#151718" : "#fafafa";
-  const inputBorder = isDark ? "#3a4044" : "#ddd";
+  const cardBg = palette.surfaceCard;
+  const cardBorder = palette.borderHairline;
+  const inputBg = palette.surfaceMuted;
+  const inputBorder = palette.borderInput;
   const mutedLabel = palette.icon;
-  const removeBtnBg = isDark ? "#1e2224" : "#fff";
-  const removeBtnBorder = isDark ? "#2f3638" : "#eee";
+  const removeBtnBg = palette.surfaceCard;
+  const removeBtnBorder = palette.borderHairline;
 
   return (
     <View

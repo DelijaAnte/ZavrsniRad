@@ -27,7 +27,7 @@ export function ExerciseProgressCharts({
   const colorScheme = useColorScheme() ?? "light";
   const palette = Colors[colorScheme];
   const chartSurface =
-    colorScheme === "dark" ? "#151718" : Colors.light.background;
+    colorScheme === "dark" ? palette.surfaceMuted : Colors.light.background;
   const chartLabel = palette.text;
   const chartGrid = palette.icon;
 

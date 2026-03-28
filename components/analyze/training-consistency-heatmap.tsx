@@ -83,9 +83,9 @@ export function TrainingConsistencyHeatmap({
   const colorScheme = useColorScheme() ?? "light";
   const palette = Colors[colorScheme];
   const isDark = colorScheme === "dark";
-  const chartSurface = isDark ? "#1e2224" : Colors.light.background;
-  const cardBg = isDark ? "#1e2224" : "#fff";
-  const cardBorder = isDark ? "#2f3638" : "#eee";
+  const chartSurface = isDark ? palette.surfaceCard : Colors.light.background;
+  const cardBg = palette.surfaceCard;
+  const cardBorder = palette.borderHairline;
 
   const { width: windowWidth } = useWindowDimensions();
   const squareSize = 28;
@@ -278,14 +278,12 @@ export function TrainingConsistencyHeatmap({
                         {
                           borderColor: active
                             ? palette.tintBorder
-                            : isDark
-                              ? "#3a4044"
-                              : "#ddd",
+                            : palette.borderInput,
                           backgroundColor: active
                             ? palette.tintMuted
                             : isDark
-                              ? "#151718"
-                              : "#fff",
+                              ? palette.surfaceMuted
+                              : palette.surfaceCard,
                         },
                       ]}
                       onPress={() => setSelectedMonthKey(m.key)}

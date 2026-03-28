@@ -164,8 +164,8 @@ export default function AnalyzeScreen() {
               style={[
                 styles.placeholderCard,
                 {
-                  backgroundColor: isDark ? "#1e2224" : "#fafafa",
-                  borderColor: isDark ? "#2f3638" : "#eee",
+                  backgroundColor: palette.surfaceMuted,
+                  borderColor: palette.borderHairline,
                 },
               ]}
             >
@@ -215,14 +215,10 @@ export default function AnalyzeScreen() {
                     {
                       borderColor: active
                         ? palette.tintBorder
-                        : isDark
-                          ? "#2f3638"
-                          : "#ddd",
+                        : palette.borderChip,
                       backgroundColor: active
                         ? palette.tintMuted
-                        : isDark
-                          ? "#1e2224"
-                          : "#fff",
+                        : palette.surfaceCard,
                     },
                   ]}
                   onPress={() => setProgressionDetailView(key)}
