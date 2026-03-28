@@ -28,7 +28,8 @@ export default function ProfileScreen() {
   const colorScheme = useColorScheme() ?? "light";
   const { t, i18n } = useTranslation();
   const isLight = colorScheme === "light";
-  const tint = Colors[colorScheme].tint;
+  const theme = Colors[colorScheme];
+  const tint = theme.tint;
   const currentLanguage: AppLanguage = i18n.language === "hr" ? "hr" : "en";
   const [deletingAccount, setDeletingAccount] = useState(false);
   const mountedRef = useRef(true);
@@ -47,7 +48,6 @@ export default function ProfileScreen() {
 
   const palette = isLight
     ? {
-        cardBg: "#f3f4f6",
         label: "#6b7280",
         primaryText: "#111827",
         divider: "#e5e7eb",
@@ -58,7 +58,6 @@ export default function ProfileScreen() {
         pageBg: Colors.light.background,
       }
     : {
-        cardBg: Colors.dark.tintMuted,
         label: "#9ca3af",
         primaryText: Colors.dark.text,
         divider: "#374151",
@@ -156,10 +155,13 @@ export default function ProfileScreen() {
                     onPress={() => void setAppLanguage("en")}
                     style={[
                       styles.languageButton,
-                      { borderColor: palette.divider, backgroundColor: palette.cardBg },
-                      currentLanguage === "en" && {
-                        borderColor: tintColorLight,
-                        backgroundColor: tintColorLight,
+                      {
+                        borderColor: currentLanguage === "en"
+                          ? theme.tintBorder
+                          : theme.borderChip,
+                        backgroundColor: currentLanguage === "en"
+                          ? theme.tintMuted
+                          : theme.surfaceCard,
                       },
                     ]}
                     activeOpacity={0.85}
@@ -167,7 +169,11 @@ export default function ProfileScreen() {
                     <Text
                       style={[
                         styles.languageButtonText,
-                        currentLanguage === "en" && { color: "#fff" },
+                        currentLanguage === "en"
+                          ? {
+                              color: isLight ? tintColorLight : theme.tint,
+                            }
+                          : { color: isLight ? "#0c2f35" : theme.text },
                       ]}
                     >
                       {t("language.en")}
@@ -180,10 +186,13 @@ export default function ProfileScreen() {
                     onPress={() => void setAppLanguage("hr")}
                     style={[
                       styles.languageButton,
-                      { borderColor: palette.divider, backgroundColor: palette.cardBg },
-                      currentLanguage === "hr" && {
-                        borderColor: tintColorLight,
-                        backgroundColor: tintColorLight,
+                      {
+                        borderColor: currentLanguage === "hr"
+                          ? theme.tintBorder
+                          : theme.borderChip,
+                        backgroundColor: currentLanguage === "hr"
+                          ? theme.tintMuted
+                          : theme.surfaceCard,
                       },
                     ]}
                     activeOpacity={0.85}
@@ -191,7 +200,11 @@ export default function ProfileScreen() {
                     <Text
                       style={[
                         styles.languageButtonText,
-                        currentLanguage === "hr" && { color: "#fff" },
+                        currentLanguage === "hr"
+                          ? {
+                              color: isLight ? tintColorLight : theme.tint,
+                            }
+                          : { color: isLight ? "#0c2f35" : theme.text },
                       ]}
                     >
                       {t("language.hr")}
@@ -201,7 +214,13 @@ export default function ProfileScreen() {
               </View>
 
               <TouchableOpacity
-                style={[styles.infoCard, { backgroundColor: palette.cardBg }]}
+                style={[
+                  styles.infoCard,
+                  {
+                    backgroundColor: theme.surfaceCard,
+                    borderColor: theme.borderCard,
+                  },
+                ]}
                 activeOpacity={email ? 0.85 : 1}
                 disabled={!email}
                 accessibilityRole={email ? "button" : "text"}
@@ -226,7 +245,13 @@ export default function ProfileScreen() {
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.infoCard, { backgroundColor: palette.cardBg }]}
+                style={[
+                  styles.infoCard,
+                  {
+                    backgroundColor: theme.surfaceCard,
+                    borderColor: theme.borderCard,
+                  },
+                ]}
                 accessibilityRole="button"
                 accessibilityLabel={t("profile.viewSourceCodeAccessibilityLabel")}
                 onPress={() => void openGitHub()}
@@ -346,6 +371,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderRadius: 14,
+    borderWidth: 1,
     paddingVertical: 16,
     paddingHorizontal: 16,
     gap: 14,
@@ -403,7 +429,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     paddingHorizontal: 10,
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
@@ -411,6 +437,5 @@ const styles = StyleSheet.create({
   languageButtonText: {
     fontSize: 15,
     fontWeight: "700",
-    color: "#0c2f35",
   },
 });
