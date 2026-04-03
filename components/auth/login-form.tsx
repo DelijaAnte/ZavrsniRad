@@ -3,13 +3,13 @@ import {
   Platform,
   Pressable,
   StyleSheet,
-  TextInput,
   View,
   type StyleProp,
   type ViewStyle,
 } from "react-native";
 import { useTranslation } from "react-i18next";
 
+import { GlowingTextInput } from "@/components/auth/glowing-text-input";
 import { ThemedText } from "@/components/themed-text";
 import { Colors } from "@/constants/theme";
 
@@ -57,15 +57,10 @@ export function LoginForm({
         GymBuddy
       </ThemedText>
 
-      <TextInput
-        style={[
-          styles.input,
-          {
-            color: palette.text,
-            borderColor: palette.icon,
-            backgroundColor: inputSurface,
-          },
-        ]}
+      <GlowingTextInput
+        palette={palette}
+        colorScheme={colorScheme}
+        inputSurface={inputSurface}
         placeholder={t("auth.emailPlaceholder")}
         placeholderTextColor={palette.icon}
         autoCapitalize="none"
@@ -74,15 +69,10 @@ export function LoginForm({
         value={email}
         onChangeText={onEmailChange}
       />
-      <TextInput
-        style={[
-          styles.input,
-          {
-            color: palette.text,
-            borderColor: palette.icon,
-            backgroundColor: inputSurface,
-          },
-        ]}
+      <GlowingTextInput
+        palette={palette}
+        colorScheme={colorScheme}
+        inputSurface={inputSurface}
         placeholder={t("auth.passwordPlaceholder")}
         placeholderTextColor={palette.icon}
         secureTextEntry
@@ -129,14 +119,6 @@ const styles = StyleSheet.create({
     lineHeight: 44,
     marginBottom: 36,
     paddingBottom: 4,
-  },
-  input: {
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 16,
-    marginBottom: 12,
   },
   message: {
     marginBottom: 12,
