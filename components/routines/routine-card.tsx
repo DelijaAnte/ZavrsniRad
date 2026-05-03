@@ -82,10 +82,7 @@ export function RoutineCard({
             <View style={styles.metaItem}>
               <Ionicons name="barbell-outline" size={18} color={metaColor} />
               <Text style={[styles.metaText, { color: metaColor }]}>
-                {totalExercises}{" "}
-                {totalExercises === 1
-                  ? t("routineCard.exerciseSingular")
-                  : t("routineCard.exercisePlural")}
+                {t("routineCard.exerciseCount", { count: totalExercises })}
               </Text>
             </View>
           </View>
