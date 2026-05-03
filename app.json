@@ -19,7 +19,8 @@
         "monochromeImage": "./assets/images/logo-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.delijaante.gymbuddy"
     },
     "web": {
       "output": "static",
@@ -45,6 +46,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "c4b14640-11ca-48f5-9c8e-0f9a9a72f911"
+      }
     }
   }
 }
